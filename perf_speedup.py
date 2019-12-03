@@ -154,11 +154,11 @@ if __name__ == "__main__":
 
         # Find report
         summary_in_file = grep(string_sys_report, filename)
-        summary_line = summary_in_file["line"][0]
-        summary_iline = summary_in_file["iline"][0]
-
-        if len(summary_line) > 0 :
-	    f = open(filename)
+        if len(summary_in_file["line"]) > 0 :
+            summary_line = summary_in_file["line"][0]
+            summary_iline = summary_in_file["iline"][0]
+            
+            f = open(filename)
             lines =f.readlines()
 
             #find index of "start" and "end" in the report line 
@@ -177,17 +177,18 @@ if __name__ == "__main__":
 
             f.close()
         else:
+            wallclock = datetime.timedelta(0.)
+            nodes = 10000
+            time_arr = [datetime.datetime(1900,1,1)]
             print ("Warning : file {} did not finish properly or the word {} is not found".format(filename, string_sys_report))
-            print ("Set Wallclock = 0 , and nodes = 100")
-            wallclock = 0.
-            nodes = 100
+            print ("Set Wallclock = {} , and nodes = {}".format(wallclock.total_seconds(),nodes))
 
         return {"n" : nodes, "wc" : wallclock, "st": time_arr[0]}
 
     # security. If not file found, exit	
     if len(slurm_files) == 0 :
-	print("No slurm file founded with this basis name")
-	print ("Exiting")
+        print("No slurm file founded with this basis name")
+        print ("Exiting")
         exit()
 
     # loop over number of cpus to be lauched
@@ -196,18 +197,19 @@ if __name__ == "__main__":
         print("Read file : {}".format(os.path.basename(filename)))
         # read nnodes and wallclock from file
         if args.mod.upper() == "ICON" :
-         
+             
             # get # nodes and wallclock
             if args.no_sys_report:
                 nodes_line = grep("no_of_nodes=",filename)["line"][0]
                 nnodes = int(nodes_line.split('=')[1].split()[0].strip())
    
                 wallclock = get_wallclock_icon(filename)["wc"].total_seconds()
-		date_run = get_wallclock_icon(filename)["st"]
+                date_run = get_wallclock_icon(filename)["st"]
             else:
-                nnodes = get_wallclock_Nnodes_gen_daint(filename)["n"]
-                wallclock = get_wallclock_Nnodes_gen_daint(filename)["wc"].total_seconds()
-		date_run = get_wallclock_Nnodes_gen_daint(filename)["st"]
+                n_wc_st = get_wallclock_Nnodes_gen_daint(filename)
+                nnodes = n_wc_st["n"]
+                wallclock = n_wc_st["wc"].total_seconds()
+                date_run = n_wc_st["st"]
 
             # get job number
             jobnumber = float(filename.split('.')[-2])
@@ -221,7 +223,7 @@ if __name__ == "__main__":
             wallclock = float(wallclock_line.split(':')[1].strip()[:-1])
 	   
             # to do: get date of teh run from slurm file 
-	    date_run = datetime.datetime(1900,01,01) 
+            date_run = datetime.datetime(1900,1,1) 
 
             jobnumber = float (filename.replace('_','.').split('.')[-2])
 
