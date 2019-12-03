@@ -96,9 +96,6 @@ if __name__ == "__main__":
 
     # fill up array
     #-----------------------------------------------------------------------------------------------
-#    if args.mod.upper() == "ICON" :
-#        iref = 1
-#    elif args.mod.upper() == "ECHAM-HAM":
     iref = 0 
 
 
@@ -106,7 +103,7 @@ if __name__ == "__main__":
         args.outfilename = '%s.csv' %args.basis_name
 
     # array for store values read in the slurm file
-    np_2print = [] #np.zeros([len(slurm_files),4]) 
+    np_2print = []
     
     
     # dictionary containing the indices of the variables in the array np_2print
@@ -114,10 +111,9 @@ if __name__ == "__main__":
              
     # conversion from cpu-sec to node-hours
     nodesec_to_nodehours = 1./3600.
-               
-    
+
     # performs the analysis (create a csv file)   
-    ilin = 0
+    #ilin = 0
 
     def grep(string,filename):
         # returns lines of file_name where string appears
@@ -221,27 +217,14 @@ if __name__ == "__main__":
 
             wallclock_line = grep("Wallclock",filename)["line"][0]
             wallclock = float(wallclock_line.split(':')[1].strip()[:-1])
-	   
+
             # to do: get date of teh run from slurm file 
             date_run = datetime.datetime(1900,1,1) 
 
             jobnumber = float (filename.replace('_','.').split('.')[-2])
 
         # fill array in
-        # number of nodes
-       # np_2print[ilin,0] = nnodes
         np_2print.append([nnodes,wallclock,jobnumber,date_run])
-
-        # wallclock
-        #np_2print[ilin,1] = wallclock
-    
-	# jobnumber
-	#np_2print[ilin,2] = jobnumber       
-
-        # date of the run
-	#np_2print[ilin,3] = date_run
-
-	#ilin += 1
 
     # put data into dataframe
     perf_df = pd.DataFrame(columns=['N_Nodes','Wallclock','Jobnumber','Date'],data=np_2print)
@@ -258,11 +241,8 @@ if __name__ == "__main__":
     # compute number of node hours
     perf_sorted['Node_hours'] = perf_sorted.N_Nodes * perf_sorted.Wallclock * nodesec_to_nodehours
     perf_sorted['NH_year'] = perf_sorted.Node_hours * 12 
-    
 
-    #ilin += 1
-
-
+    # write csv file
     filename_out = '%s/%s' %(path_out,args.outfilename)
     perf_sorted.to_csv(filename_out, columns=['Date','Jobnumber','N_Nodes','Wallclock','Speedup','Node_hours','Efficiency','NH_year'],sep=';', index=False, float_format="%.2f")
 
