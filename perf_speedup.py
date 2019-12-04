@@ -21,6 +21,14 @@ import datetime
 import itertools
 import pandas as pd # need to load module load cray-python/2.7.15.1 PyExtensions/2.7.15.1-CrayGNU-18.08
 
+
+class default_wallclock():
+    # defines defaults values for nnodes, wallclock and date
+    def __init__(self):
+        self.wallclock = np.nan #datetime.timedelta(0.).total_seconds()
+        self.nodes = 10000
+        self.time_array = [datetime.datetime(1900, 1, 1)]
+
 if __name__ == "__main__":
 
     # parsing arguments
@@ -118,17 +126,20 @@ if __name__ == "__main__":
     def grep(string,filename):
         # returns lines of file_name where string appears
         # mimic the "grep" function 
-        
+
+        # initialisation
         # list of lines where string is found
         list_line = []
         list_iline = []
+        lo_success = False
      
         for iline,line in enumerate(open(filename)):
             if string in line:
                 list_line.append(line)
                 list_iline.append(iline)
-        
-        return {"iline" : list_iline, "line" : list_line}
+                lo_success = True
+
+        return {"success": lo_success,  "iline" : list_iline, "line" : list_line}
     
     def get_wallclock_icon(filename):
        
@@ -145,12 +156,24 @@ if __name__ == "__main__":
             wallclock = datetime.timedelta(0)
     
         return {"wc" : wallclock, "st": time_arr[0]} 
-    
+
+    def check_icon_finished(filename, string_sys_report='Script run successfully:  OK'):
+        # return True if icon finished properly
+
+        # initilisation
+        lo_finished_ok = False
+
+        # look for ok_line
+        if grep(string_sys_report, filename)['success']:
+            lo_finished_ok = True
+
+        return (lo_finished_ok)
+
     def get_wallclock_Nnodes_gen_daint(filename, string_sys_report="Elapsed"):
 
         # Find report
         summary_in_file = grep(string_sys_report, filename)
-        if len(summary_in_file["line"]) > 0 :
+        if summary_in_file['success']:
             summary_line = summary_in_file["line"][0]
             summary_iline = summary_in_file["iline"][0]
             
@@ -173,11 +196,11 @@ if __name__ == "__main__":
 
             f.close()
         else:
-            wallclock = datetime.timedelta(0.)
-            nodes = 10000
-            time_arr = [datetime.datetime(1900,1,1)]
-            print ("Warning : file {} did not finish properly or the word {} is not found".format(filename, string_sys_report))
-            print ("Set Wallclock = {} , and nodes = {}".format(wallclock.total_seconds(),nodes))
+            wallclock = default_wallclock.wallclock
+            nodes = default_wallclock.nodes
+            time_arr = default_wallclock.time_array
+            print("Warning : Batch summary report is not present or the word {} is not found".format(filename, string_sys_report))
+            print("Set Wallclock = {} , and nodes = {}".format(wallclock,nodes))
 
         return {"n" : nodes, "wc" : wallclock, "st": time_arr[0]}
 
@@ -193,19 +216,26 @@ if __name__ == "__main__":
         print("Read file : {}".format(os.path.basename(filename)))
         # read nnodes and wallclock from file
         if args.mod.upper() == "ICON" :
-             
-            # get # nodes and wallclock
-            if args.no_sys_report:
-                nodes_line = grep("no_of_nodes=",filename)["line"][0]
-                nnodes = int(nodes_line.split('=')[1].split()[0].strip())
+            if check_icon_finished:
+
+                # get # nodes and wallclock
+                if args.no_sys_report:
+                    nodes_line = grep("no_of_nodes=",filename)["line"][0]
+                    nnodes = int(nodes_line.split('=')[1].split()[0].strip())
    
-                wallclock = get_wallclock_icon(filename)["wc"].total_seconds()
-                date_run = get_wallclock_icon(filename)["st"]
+                    wallclock = get_wallclock_icon(filename)["wc"].total_seconds()
+                    date_run = get_wallclock_icon(filename)["st"]
+                else:
+                    n_wc_st = get_wallclock_Nnodes_gen_daint(filename)
+                    nnodes = n_wc_st["n"]
+                    wallclock = n_wc_st["wc"].total_seconds()
+                    date_run = n_wc_st["st"]
             else:
-                n_wc_st = get_wallclock_Nnodes_gen_daint(filename)
-                nnodes = n_wc_st["n"]
-                wallclock = n_wc_st["wc"].total_seconds()
-                date_run = n_wc_st["st"]
+                wallclock = default_wallclock.wallclock
+                nodes = default_wallclock.nodes
+                time_arr = default_wallclock.time_array
+                print("Warning : Run did not finished properly")
+                print("Set Wallclock = {} , and nodes = {}".format(wallclock, nodes))
 
             # get job number
             jobnumber = float(filename.split('.')[-2])
