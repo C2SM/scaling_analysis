@@ -6,52 +6,35 @@
 # Colombe Siegenthaler    C2SM (ETHZ) , 09.2108
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import os
+import glob
+
+import def_exps_plot as defexp
 
 # path to the .csv files
-path = '/Users/colombsi/Documents/CSCS/perfs/2018/perfs_per_config'
+path = '/Users/colombsi/Documents/CSCS/perfs/2019/perfs_per_config'
 
-# definition of the object "experiment". It contains mostly teh potting properties 
-class experiment:
-     def __init__(self, name, label, color, symbol, linestyle, linewidth = 1., bestconf = np.nan):
-         self.name = name
-         self.label = label
-         self.color = color
-         self.symbol = symbol
-         self.linestyle = linestyle
-         self.linewidth = linewidth
-         self.bestconf = bestconf
-
-# Definition of each experiment properties (colors, labels,ect)
-atm_amip_1m_old = experiment(name = 'atm_amip_1m_Sep2018', label = 'old ICON 1m', color = 'blue', symbol = 'o', linewidth = 0.5, linestyle = '--', bestconf = 22)
-atm_amip_6h_old = experiment(name = 'atm_amip_6h_Sep2018', label = 'old ICON 6h', color = 'purple', symbol = 'o', linewidth = 0.5, linestyle = '--', bestconf = 20)
-e63_default_T63L47_1m_old = experiment(name = 'e63_default_T63L47_1m_Sep2018', label = 'ECHAM 1m', color = 'orange', symbol = 's', linestyle = '-', bestconf = 17)
-e63_default_T63L47_6h_old = experiment(name = 'e63_default_T63L47_6h_Sep2018', label = 'ECHAM 6h', color = 'orange', symbol = 's', linestyle = '--', bestconf = 8)
-e63h23_T63L47_1m_2017_old = experiment(name = 'e63h23_T63L47_1m_2017', label = 'ECHAM-HAM 1m', color = 'red', symbol = 'd', linestyle = '-', bestconf = 34)
-e63h23_T63L47_6h_2017 = experiment(name = 'e63h23_T63L47_6h_2017', label = 'ECHAM-HAM 6h', color = 'pink', symbol = 'd', linestyle = '--', bestconf = 16)
-esm_ham_T63L47_1m_2017 = experiment(name = 'ESM-HAM-T63L47_1m_2017', label = 'MPI-ESM-HAM 1m', color = 'green', symbol = '*', linestyle = '-', bestconf = 36)
-
-atm_amip_1m_gcc = experiment(name = 'atm_amip_1m_gcc', label = 'ICON gcc 1m', color = 'LightBlue', symbol = 'd', linestyle = '-')
-atm_amip_1m = experiment(name = 'atm_amip_1m', label = 'ICON cray 1m', color = 'blue', symbol = 'o', linestyle = '-', bestconf = 34)
-atm_amip_6h = experiment(name = 'atm_amip_6h', label = 'ICON cray 6h', color = 'purple', symbol = 'o', linestyle = '--', bestconf = 33)
-e63_default_T63L47_6h = experiment(name = 'e63_6h', label = 'ECHAM 1m', color = 'orange', symbol = 's', linestyle = '-', bestconf = 10)
-e63h23_T63L47_1m = experiment(name = 'e63ham_1m', label = 'ECHAM-HAM 1m', color = 'red', symbol = 'd', linestyle = '-', bestconf = 36)
-e63h23_T63L47_6h = experiment(name = 'e63ham_6h', label = 'ECHAM-HAM 6h', color = 'pink', symbol = 'd', linestyle = '--', bestconf = 12)
-esm_ham_T63L47_1m = experiment(name = 'mpiesm-ham_1m', label = 'MPI-ESM-HAM 1m', color = 'green', symbol = '*', linestyle = '-', bestconf = 48)
-
- 
 # files to include
-#files_to_read = [atm_amip_6h, atm_amip_1m, e63_default_T63L47_6h, e63h23_T63L47_6h, e63h23_T63L47_1m, esm_ham_T63L47_1m]
-files_to_read = [atm_amip_6h, atm_amip_1m, atm_amip_1m_gcc]
+#files_to_read = [defexp.atm_amip_6h, defexp.atm_amip_1m, defexp.e63_default_T63L47_6h, defexp.e63h23_T63L47_6h, defexp.e63h23_T63L47_1m, defexp.esm_ham_T63L47_1m]
+#files_to_read = [defexp.atm_amip_6h, defexp.atm_amip_1m, defexp.atm_amip_1m_gcc]
+files_to_read = []
 
-var_to_plot = 'Wallclock'
+
+var_to_plot = 'Efficiency'
 name_plot = 'ICON'
 
 lo_write_csv = False
 
 #----------------------Begin of script-----------------------------------------------------------
+
+# list of exp to plot not given, take all csv files in the folder 'path'
+if len(files_to_read) == 0:
+    csv_files = glob.glob(os.path.join(path,'*.csv'))
+
+    files_to_read = [defexp.experiment(name = os.path.basename(fn).split('.csv')[0]) for fn in csv_files]
+
+
 
 # Define figure
 fig, ax = plt.subplots()
@@ -78,22 +61,22 @@ for exp in files_to_read:
     # remove the lines with identical number of nodes. Keep the shortest time
     dt.sort_values(by=['N_Nodes','Wallclock'], ascending = [1,0], inplace=True)   # reorder the dataframe by 1st number of nodes, and then descending wallcloks
                                                                                   # for a given # nodes, shorter wallclock will be the last line 
-    dt.drop_duplicates(subset=['N_Nodes'], keep='last',inplace=True)  # remove line duplicates, keeps the last line 
+    dt.drop_duplicates(subset=['N_Nodes'], keep='last',inplace=True)  # remove line duplicates, keeps the last line
 
     # plot
-    dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax, label=exp.label, color=exp.color, style=exp.linestyle, marker=exp.symbol, linewidth = exp.linewidth)
+    dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax, **exp.line_appareance)
 
     # highlight the chosen config (only for efficiency)
     if var_to_plot == 'Efficiency' :
         best_n = exp.bestconf
         if best_n in dt.N_Nodes.values:
-    	    perf_chosen = float(dt[dt.N_Nodes == best_n].Efficiency)
-    	    ax.scatter(best_n, perf_chosen, s=150.,color='k')
+            perf_chosen = float(dt[dt.N_Nodes == best_n].Efficiency)
+            ax.scatter(best_n, perf_chosen, s=150.,color='k')
         else:	
-	    print ("Warning, the number of nodes defined for the best configuration ({}) is not in the csv file : {}.csv ".format(best_n,exp.name))  
-	    print ("The number of nodes in the csv files are: ")
-	    print("{}".format(dt.N_Nodes))
-	    print ("Not plotting the best configuration point")
+            print ("Warning, the number of nodes defined for the best configuration ({}) is not in the experiment definition".format(best_n))
+            print ("The number of nodes in the csv files are: ")
+            print("{}".format(dt.N_Nodes))
+            print ("Not plotting the best configuration point")
 
     # Fill the out dataframe
     out_df = pd.merge(out_df, \
