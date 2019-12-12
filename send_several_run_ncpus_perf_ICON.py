@@ -31,7 +31,7 @@ if __name__ == "__main__":
     # parsing arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-basis_folder_icon', dest = 'basis_folder',\
-                            default = '/users/colombsi/icon-hammoz',\
+                            default = os.getcwd(),\
                             help='basis model folder e.g. /users/colombsi/icon-hammoz') 
     parser.add_argument('-exp_base', dest = 'exp_base',\
                             default = 'atm_amip_1month',\
