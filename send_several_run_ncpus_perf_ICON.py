@@ -30,18 +30,18 @@ if __name__ == "__main__":
 
     # parsing arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-basis_folder_icon', dest = 'basis_folder',\
+    parser.add_argument('--basis_folder_icon', '-b', dest = 'basis_folder',\
                             default = os.getcwd(),\
                             help='basis model folder e.g. /users/colombsi/icon-hammoz') 
-    parser.add_argument('-exp_base', dest = 'exp_base',\
+    parser.add_argument('--exp_base', '-e', dest = 'exp_base',\
                             default = 'atm_amip_1month',\
                             help='basis model folder e.g. atm_amip_1month')
-    parser.add_argument('-arrange_nnodes', dest = 'arrange_nnodes',\
+    parser.add_argument('--arrange_nnodes', '-a', dest = 'arrange_nnodes',\
                             default = [1,11,1],\
                             type = int,\
                             nargs = 3,\
                             help = 'list of number of nodes in the np.arrange format : [begining iteration, end iteration, step]. Default:[1,11,1] (=[1,2,3,4,5,6,7,8,9,10]')
-    parser.add_argument('-nnodes', dest = 'nodes_to_proceed',\
+    parser.add_argument('--nnodes', '-n', dest = 'nodes_to_proceed',\
                             default = [],\
                             type = int,\
                             nargs = '*',\
