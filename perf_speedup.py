@@ -21,13 +21,8 @@ import datetime
 import itertools
 import pandas as pd # need to load module load cray-python/2.7.15.1 PyExtensions/2.7.15.1-CrayGNU-18.08
 
-
-class default_wallclock():
-    # defines defaults values for nnodes, wallclock and date
-    def __init__(self):
-        self.wallclock = np.nan #datetime.timedelta(0.).total_seconds()
-        self.nodes = 10000
-        self.time_array = [datetime.datetime(1900, 1, 1)]
+ # defines defaults values for nnodes, wallclock and date
+default_wallclock={'wallclock' : np.nan, 'nodes' : 10000, 'time_array' : [datetime.datetime(1900, 1, 1)]}
 
 if __name__ == "__main__":
 
@@ -196,11 +191,11 @@ if __name__ == "__main__":
 
             f.close()
         else:
-            wallclock = default_wallclock.wallclock
-            nodes = default_wallclock.nodes
-            time_arr = default_wallclock.time_array
+            wallclock = default_wallclock['wallclock']
+            nnodes = default_wallclock['nodes']
+            time_arr = default_wallclock['time_array']
             print("Warning : Batch summary report is not present or the word {} is not found".format(filename, string_sys_report))
-            print("Set Wallclock = {} , and nodes = {}".format(wallclock,nodes))
+            print("Set Wallclock = {} , and nodes = {}".format(wallclock,nnodes))
 
         return {"n" : nodes, "wc" : wallclock, "st": time_arr[0]}
 
@@ -216,7 +211,7 @@ if __name__ == "__main__":
         print("Read file : {}".format(os.path.basename(filename)))
         # read nnodes and wallclock from file
         if args.mod.upper() == "ICON" :
-            if check_icon_finished:
+            if check_icon_finished(filename):
 
                 # get # nodes and wallclock
                 if args.no_sys_report:
@@ -231,11 +226,11 @@ if __name__ == "__main__":
                     wallclock = n_wc_st["wc"].total_seconds()
                     date_run = n_wc_st["st"]
             else:
-                wallclock = default_wallclock.wallclock
-                nodes = default_wallclock.nodes
-                time_arr = default_wallclock.time_array
+                wallclock = default_wallclock['wallclock']
+                nnodes = default_wallclock['nodes']
+                date_run = default_wallclock['time_array']
                 print("Warning : Run did not finished properly")
-                print("Set Wallclock = {} , and nodes = {}".format(wallclock, nodes))
+                print("Set Wallclock = {} , and nodes = {}".format(wallclock, nnodes))
 
             # get job number
             jobnumber = float(filename.split('.')[-2])
