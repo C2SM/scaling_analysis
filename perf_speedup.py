@@ -257,6 +257,10 @@ if __name__ == "__main__":
     # put data into dataframe
     perf_df = pd.DataFrame(columns=['N_Nodes','Wallclock','Jobnumber','Date'],data=np_2print)
     perf_sorted = perf_df.sort_values(by=['N_Nodes','Wallclock','Jobnumber'], ascending = [1,0,1]) 
+ 
+    # wallclock in human reading form    
+    perf_sorted['Wallclock_hum'] = pd.to_datetime(perf_sorted["Wallclock"], unit='s').dt.strftime("%H:%M:%S") #,format="%H-%M-%S")
+
     # reference line time
     ref_time = perf_sorted.iloc[iref]
 
@@ -272,7 +276,7 @@ if __name__ == "__main__":
 
     # write csv file
     filename_out = '%s/%s' %(path_out,args.outfilename)
-    perf_sorted.to_csv(filename_out, columns=['Date','Jobnumber','N_Nodes','Wallclock','Speedup','Node_hours','Efficiency','NH_year'],sep=';', index=False, float_format="%.2f")
+    perf_sorted.to_csv(filename_out, columns=['Date','Jobnumber','N_Nodes','Wallclock','Wallclock_hum','Speedup','Node_hours','Efficiency','NH_year'],sep=';', index=False, float_format="%.2f")
 
 
 
