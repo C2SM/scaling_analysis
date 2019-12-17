@@ -28,35 +28,35 @@ if __name__ == "__main__":
 
     # parsing arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-basis_name', dest = 'basis_name',\
+    parser.add_argument('--exp', '-e', dest = 'basis_name',\
                             help='basis name of the exp to anaylse.') 
-    parser.add_argument('-arange_nodes', dest = 'arange_nodes',\
+    parser.add_argument('--arange_nodes', dest = 'arange_nodes',\
                             nargs = 3,\
                             type = int,\
                             help = 'nodes number to analyse.') 
-    parser.add_argument('-nnodes', dest = 'nodes_to_proceed',\
+    parser.add_argument('--nnodes', '-n', dest = 'nodes_to_proceed',\
                             default = [],\
                             type = int,\
                             nargs = '*',\
                             help = 'cups number of the simulation to analyse.This have priority over -ncpus_incr, -niter and -nbeg_iter')  
-    parser.add_argument('-outfilename', dest = 'outfilename',\
+    parser.add_argument('--outfilename','-o', dest = 'outfilename',\
                             default='',\
                             help='name of the ouput file') 
 
-    parser.add_argument('-res', dest = 'res',\
+    parser.add_argument('--res', '-r', dest = 'res',\
                             default='',\
                             help='resolution(with ocean) eg T63L31GR15 ') 
 
-    parser.add_argument('-mod', dest = 'mod',\
+    parser.add_argument('--mod','-m', dest = 'mod',\
                             default='echam-ham',\
                             help='model type (echam-ham, icon)') 
 
-    parser.add_argument('-cpu_per_node', dest = 'cpu_per_node',\
+    parser.add_argument('--cpu_per_node', dest = 'cpu_per_node',\
                         default = 12,\
                         type = int,\
                         help = 'numper of CPUs per node') 
 
-    parser.add_argument('-no_sys_report', action='store_true',\
+    parser.add_argument('--no_sys_report', action='store_true',\
                         help = 'no time report provided by the system, per defualt, the wallclock will be taken from this report. If this option enabled, the wallclok will computed in a different way')                    
 
     args = parser.parse_args()
