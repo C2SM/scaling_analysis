@@ -46,7 +46,11 @@ if __name__ == "__main__":
                             type = int,\
                             nargs = '*',\
                             help = 'cups number of the simulation to analyse. This have priority over -arrange_nnodes')  
-    
+    parser.add_argument('--wallclock','-w', dest = 'wallclock' ,\
+                            default = None,\
+                            type = str,\
+                            help = 'wallclock to use when sending the run to the batch system')    
+
     args = parser.parse_args()
 
     # base experiment
@@ -59,10 +63,10 @@ if __name__ == "__main__":
     if os.path.isdir(args.basis_folder):   
         os.chdir(args.basis_folder)
     else:
-	print ("The following basis direcotory does not exist :%s" %args.basis_folder)
-	print ("Please give an existing directory with the option -basis_folder_icon")
-	print ("Exiting")
-	exit(-1)    
+        print ("The following basis direcotory does not exist :%s" %args.basis_folder)
+        print ("Please give an existing directory with the option -basis_folder_icon")
+        print ("Exiting")
+        exit(-1)    
 
     #define run dir
     path_run_dir = os.path.join(args.basis_folder,"run")
@@ -78,19 +82,21 @@ if __name__ == "__main__":
 
 	# create the runscripts with the icon script creating tool 
         print ("Create runscript")
-	new_script = create_runscript(exp_base,nnodes)
+        new_script = create_runscript(exp_base,nnodes)
 	
 	# path to the newly created script (needed for launching it)
-	path_to_newscript = os.path.join(path_run_dir,"exp.%s.run" %new_script)
+        path_to_newscript = os.path.join(path_run_dir,"exp.%s.run" %new_script)
 
         # need to be in run folder to have some function defined
         os.chdir(path_run_dir)
 
-	# roughly estimated time in sbatch format	
-        seconds = datetime.timedelta(hours=np.float(one_node_hour)/nnodes).total_seconds()
-        hours = seconds // 3600
-        minutes = (seconds % 3600) // 60
-        wallclocktime = "%02i:%02i:00" %(hours,minutes)
+        wallclocktime = args.wallclock
+        # roughly estimated time in sbatch format	
+        if args.wallclock is None :
+            seconds = datetime.timedelta(hours=np.float(one_node_hour)/nnodes).total_seconds()
+            hours = seconds // 3600
+            minutes = (seconds % 3600) // 60
+            wallclocktime = "%02i:%02i:00" %(hours,minutes)
 
         # job definition and submission
         print ('sbatch --time=%s %s' %(wallclocktime,path_to_newscript))
