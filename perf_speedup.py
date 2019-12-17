@@ -22,7 +22,7 @@ import itertools
 import pandas as pd # need to load module load cray-python/2.7.15.1 PyExtensions/2.7.15.1-CrayGNU-18.08
 
  # defines defaults values for nnodes, wallclock and date
-default_wallclock={'wallclock' : np.nan, 'nodes' : 10000, 'time_array' : [datetime.datetime(1900, 1, 1)]}
+default_wallclock={'wallclock' : np.nan, 'nnodes' : 10000, 'date_run' : datetime.datetime(1900, 1, 1).strftime("%Y-%m-%d %H:%M:%S")}
 
 if __name__ == "__main__":
 
@@ -164,6 +164,17 @@ if __name__ == "__main__":
 
         return (lo_finished_ok)
 
+    def set_default_error_slurm_file(txt_message = "Problem in the slurm file"):
+        # error in the slurm file, set default values
+
+        wallclock = default_wallclock['wallclock']
+        nnodes = default_wallclock['nnodes']
+        date_run = default_wallclock['date_run']
+        print(txt_message)
+        print("Set Wallclock = {} , and nodes = {}".format(wallclock,nnodes))
+
+        return(wallclock,nnodes,date_run)
+
     def get_wallclock_Nnodes_gen_daint(filename, string_sys_report="Elapsed"):
 
         # Find report
@@ -191,11 +202,7 @@ if __name__ == "__main__":
 
             f.close()
         else:
-            wallclock = default_wallclock['wallclock']
-            nnodes = default_wallclock['nodes']
-            time_arr = default_wallclock['time_array']
-            print("Warning : Batch summary report is not present or the word {} is not found".format(filename, string_sys_report))
-            print("Set Wallclock = {} , and nodes = {}".format(wallclock,nnodes))
+            wallclock, nnodes, time_arr = set_default_error_slurm_file("Warning : Batch summary report is not present or the word {} is not found".format(filename, string_sys_report))
 
         return {"n" : nodes, "wc" : wallclock, "st": time_arr[0]}
 
@@ -226,11 +233,7 @@ if __name__ == "__main__":
                     wallclock = n_wc_st["wc"].total_seconds()
                     date_run = n_wc_st["st"]
             else:
-                wallclock = default_wallclock['wallclock']
-                nnodes = default_wallclock['nodes']
-                date_run = default_wallclock['time_array']
-                print("Warning : Run did not finished properly")
-                print("Set Wallclock = {} , and nodes = {}".format(wallclock, nnodes))
+                wallclock, nnodes, date_run = set_default_error_slurm_file("Warning : Run did not finished properly")
 
             # get job number
             jobnumber = float(filename.split('.')[-2])
