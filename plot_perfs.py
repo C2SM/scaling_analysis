@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import glob
+import numpy as np
 
 import def_exps_plot as defexp
 
@@ -16,15 +17,36 @@ import def_exps_plot as defexp
 path = '/Users/colombsi/Documents/CSCS/perfs/2019/perfs_per_config'
 
 # files to include
-#files_to_read = [defexp.atm_amip_6h, defexp.atm_amip_1m, defexp.e63_default_T63L47_6h, defexp.e63h23_T63L47_6h, defexp.e63h23_T63L47_1m, defexp.esm_ham_T63L47_1m]
-#files_to_read = [defexp.atm_amip_6h, defexp.atm_amip_1m, defexp.atm_amip_1m_gcc]
-files_to_read = []
+# ECHAM/MPI_ESM
+#files_to_read = [defexp.e63h23_T63L47_1m, defexp.esm_ham_T63L47_1m]
+
+# all ICONs, all compils
+files_to_read = [defexp.iconham_gcc,
+                 defexp.icon_amip_1m_cray,defexp.icon_amip_1m_intel,defexp.icon_amip_1m_gcc,
+                 defexp.icon_amip_6h_cray,defexp.icon_amip_6h_intel,defexp.icon_amip_6h_gcc]
+
+# all ICON-LAM
+files_to_read = [defexp.icon_lam_cray,defexp.icon_lam_intel] #defexp.icon_lam_gcc,
+
+# ICON-LAM init
+#files_to_read =  [defexp.icon_lam_init_cray,defexp.icon_lam_init_intel,defexp.icon_lam_init_gcc]
+
+# ICON, best config
+#files_to_read = [defexp.iconham_gcc, defexp.icon_amip_6h_intel, defexp.icon_amip_1m_intel,defexp.icon_lam_cray]
+
+# all mods, best config
+#files_to_read = [defexp.iconham_gcc, defexp.icon_amip_6h_intel, defexp.icon_amip_1m_intel,defexp.icon_lam_cray, defexp.e63h23_T63L47_1m, defexp.esm_ham_T63L47_1m]
+
+# all files in folder
+#files_to_read = []
 
 
-var_to_plot = 'Efficiency'
-name_plot = 'ICON'
+var_to_plot = 'Node_hours'
+name_plot = 'ICON-LAM'
 
-lo_write_csv = False
+lo_wc_min = True       # transform Wallclock in minutes
+lo_write_csv = True    # write csv file of data in the plot
+lo_best_conf = False   # pllot the best configuration on Efficiency plot
 
 #----------------------Begin of script-----------------------------------------------------------
 
@@ -32,7 +54,7 @@ lo_write_csv = False
 if len(files_to_read) == 0:
     csv_files = glob.glob(os.path.join(path,'*.csv'))
 
-    files_to_read = [defexp.experiment(name = os.path.basename(fn).split('.csv')[0]) for fn in csv_files]
+    files_to_read = [defexp.experiment(name = os.path.basename(fn).split('.csv')[0],marker='o') for fn in csv_files]
 
 
 
@@ -47,7 +69,9 @@ for exp in files_to_read:
 
     # path to the file
     abs_path = os.path.join(path,"{}.csv".format(exp.name))
- 
+
+    if not os.path.isfile((abs_path)):
+        print('Warning: File does not exist : {}'.format(abs_path))
     
     if exp.name.endswith('2017'):
         sep=','
@@ -63,11 +87,14 @@ for exp in files_to_read:
                                                                                   # for a given # nodes, shorter wallclock will be the last line 
     dt.drop_duplicates(subset=['N_Nodes'], keep='last',inplace=True)  # remove line duplicates, keeps the last line
 
+    if var_to_plot == 'Wallclock' and lo_wc_min:
+        dt['Wallclock'] = dt['Wallclock']/60.
+
     # plot
-    dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax, **exp.line_appareance)
+    dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax,label=exp.label, **exp.line_appareance)
 
     # highlight the chosen config (only for efficiency)
-    if var_to_plot == 'Efficiency' :
+    if var_to_plot == 'Efficiency' and lo_best_conf :
         best_n = exp.bestconf
         if best_n in dt.N_Nodes.values:
             perf_chosen = float(dt[dt.N_Nodes == best_n].Efficiency)
@@ -80,25 +107,35 @@ for exp in files_to_read:
 
     # Fill the out dataframe
     out_df = pd.merge(out_df, \
- 	              dt[['N_Nodes','Efficiency']].rename(columns={'Efficiency': '{}'.format(exp.label)}), \
+ 	              dt[['N_Nodes',var_to_plot]].rename(columns={var_to_plot: '{}'.format(exp.label)}), \
 		      how='outer', on=['N_Nodes'])
 
     # cleaning
     del dt
 
 # general plot properties 
-ax.grid(color='grey', linestyle=':')
+ax.grid(color='grey', which='both',linestyle=':')
+
+# x-axis
+min_N = 0
+max_N = max(out_df.N_Nodes)
+#max_N = 50
+ax.set_xlim([min_N,max_N])
+ax.set_xticks(np.arange(min_N, max_N, step=5),minor=True)
+ax.set_xlabel('# Nodes')
+#ax.set_ylim([0,70])
+
+#y-axis
+ax.set_ylabel(var_to_plot)
 if var_to_plot == 'Efficiency':
-    ax.set_ylim([40,115])
+    ax.set_ylim([20,110])
     ax.axhline(y=70,color='k')
 if var_to_plot == 'Speedup':
-    max_N = 40
     ax.plot([0,max_N],[0,max_N])
-    ax.set_xlim([0,max_N])
     ax.set_ylim([0,max_N])
+if var_to_plot == 'Wallclock' and lo_wc_min:
+    ax.set(ylabel = 'Wallclock [minutes]')
 
-ax.set_xlabel('# Nodes')
-ax.set_ylabel(var_to_plot) #'Efficiency [%]')
 ax.legend()
 
 # sort global dataframe
@@ -112,5 +149,5 @@ fig.savefig(os.path.join(path,'{}{}.pdf'.format(var_to_plot,name_plot)))
 
 # write out global dataframe
 if lo_write_csv:
-    filename_out = os.path.join(path,'summary_performances_tot{}.csv'.format(name_plot))	
-    out_df.to_csv(filename_out,sep=',', index=False, float_format="%.2f")
+    filename_out = os.path.join(path,'summary_{}_tot{}.csv'.format(var_to_plot,name_plot))
+    out_df.to_csv(filename_out,sep=';', index=False, float_format="%.2f")
