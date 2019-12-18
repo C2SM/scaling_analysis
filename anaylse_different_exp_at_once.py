@@ -3,7 +3,7 @@
 # Script to use perftool analysis script on different experiments in different folders
 #
 #
-#Example : perf_speedup.
+# Example : python anaylse_different_exp_at_once.py
 #
 # C. Siegenthaler (C2SM) , December 2019
 #
