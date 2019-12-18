@@ -56,6 +56,11 @@ if __name__ == "__main__":
                         type = int,\
                         help = 'numper of CPUs per node') 
 
+    parser.add_argument('--fact_nh_yr', '-y', dest = 'factor_nh_year',\
+                        default = 12,\
+                        type = int,\
+                        help = 'factor to multiply getting NH per year')
+
     parser.add_argument('--no_sys_report', action='store_true',\
                         help = 'no time report provided by the system, per defualt, the wallclock will be taken from this report. If this option enabled, the wallclok will computed in a different way')                    
 
@@ -272,7 +277,7 @@ if __name__ == "__main__":
 
     # compute number of node hours
     perf_sorted['Node_hours'] = perf_sorted.N_Nodes * perf_sorted.Wallclock * nodesec_to_nodehours
-    perf_sorted['NH_year'] = perf_sorted.Node_hours * 12 
+    perf_sorted['NH_year'] = perf_sorted.Node_hours * args.factor_nh_year 
 
     # write csv file
     filename_out = '%s/%s' %(path_out,args.outfilename)
