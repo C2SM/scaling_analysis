@@ -21,12 +21,12 @@ path = '/Users/colombsi/Documents/CSCS/perfs/2019/perfs_per_config'
 #files_to_read = [defexp.e63h23_T63L47_1m, defexp.esm_ham_T63L47_1m]
 
 # all ICONs, all compils
-files_to_read = [defexp.iconham_gcc,
-                 defexp.icon_amip_1m_cray,defexp.icon_amip_1m_intel,defexp.icon_amip_1m_gcc,
-                 defexp.icon_amip_6h_cray,defexp.icon_amip_6h_intel,defexp.icon_amip_6h_gcc]
+#files_to_read = [defexp.iconham_gcc,
+#                 defexp.icon_amip_1m_cray,defexp.icon_amip_1m_intel,defexp.icon_amip_1m_gcc,
+#                 defexp.icon_amip_6h_cray,defexp.icon_amip_6h_intel,defexp.icon_amip_6h_gcc]
 
 # all ICON-LAM
-files_to_read = [defexp.icon_lam_cray,defexp.icon_lam_intel] #defexp.icon_lam_gcc,
+#files_to_read = [defexp.icon_lam_cray,defexp.icon_lam_intel] #defexp.icon_lam_gcc,
 
 # ICON-LAM init
 #files_to_read =  [defexp.icon_lam_init_cray,defexp.icon_lam_init_intel,defexp.icon_lam_init_gcc]
@@ -35,14 +35,14 @@ files_to_read = [defexp.icon_lam_cray,defexp.icon_lam_intel] #defexp.icon_lam_gc
 #files_to_read = [defexp.iconham_gcc, defexp.icon_amip_6h_intel, defexp.icon_amip_1m_intel,defexp.icon_lam_cray]
 
 # all mods, best config
-#files_to_read = [defexp.iconham_gcc, defexp.icon_amip_6h_intel, defexp.icon_amip_1m_intel,defexp.icon_lam_cray, defexp.e63h23_T63L47_1m, defexp.esm_ham_T63L47_1m]
+files_to_read = [defexp.iconham_gcc, defexp.icon_amip_6h_intel, defexp.icon_amip_1m_intel,defexp.icon_lam_cray, defexp.e63h23_T63L47_1m, defexp.esm_ham_T63L47_1m]
 
 # all files in folder
 #files_to_read = []
 
 
-var_to_plot = 'Node_hours'
-name_plot = 'ICON-LAM'
+var_to_plot = 'Efficiency'
+name_plot = 'all-mods'
 
 lo_wc_min = True       # transform Wallclock in minutes
 lo_write_csv = True    # write csv file of data in the plot
@@ -56,7 +56,10 @@ if len(files_to_read) == 0:
 
     files_to_read = [defexp.experiment(name = os.path.basename(fn).split('.csv')[0],marker='o') for fn in csv_files]
 
-
+# define possible units
+unit = {'Wallclock' : 'seconds', 'Efficiency' : '%'}
+if lo_wc_min:
+    unit['Wallclock'] = 'minutes'
 
 # Define figure
 fig, ax = plt.subplots()
@@ -126,15 +129,19 @@ ax.set_xlabel('# Nodes')
 #ax.set_ylim([0,70])
 
 #y-axis
-ax.set_ylabel(var_to_plot)
 if var_to_plot == 'Efficiency':
     ax.set_ylim([20,110])
     ax.axhline(y=70,color='k')
+
 if var_to_plot == 'Speedup':
     ax.plot([0,max_N],[0,max_N])
     ax.set_ylim([0,max_N])
-if var_to_plot == 'Wallclock' and lo_wc_min:
-    ax.set(ylabel = 'Wallclock [minutes]')
+
+# y label
+ylab = var_to_plot
+if var_to_plot in unit.keys():
+    ylab = '{} [{}]'.format(ylab,unit[var_to_plot])
+ax.set_ylabel(ylab)
 
 ax.legend()
 
