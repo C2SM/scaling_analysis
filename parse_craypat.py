@@ -83,83 +83,85 @@ def get_jobnumber(path_dir):
     jobnumber = get_jobnumber_from_slurmfile(slurm_file_path)
 
     return(jobnumber)
-# parsing arguments
-parser = argparse.ArgumentParser()
-parser.add_argument('--exclude', '-e', dest = 'exclude_dir',\
-                    default = [],\
-                    nargs = '*',\
-                    help='folders to exclude.') 
-parser.add_argument('--out_f', '-o', dest = 'out_f',\
-                    default = 'Craypat_table',\
-                    help = 'filename of the output.') 
-args = parser.parse_args()
 
-# get current directory
-pwd = os.getcwd()
+if __name__ == "__main__":
+    # parsing arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--exclude', '-e', dest = 'exclude_dir',\
+                       default = [],\
+                       nargs = '*',\
+                       help='folders to exclude.') 
+    parser.add_argument('--out_f', '-o', dest = 'out_f',\
+                       default = 'Craypat_table',\
+                       help = 'filename of the output.') 
+    args = parser.parse_args()
 
-# find all the summary files
-#all_files = glob.glob('{}/**/summary*.txt'.format(pwd), recursive=True)
-all_files = glob.glob('{}/**/RUNTIME.rpt'.format(pwd), recursive=True)
+    # get current directory
+    pwd = os.getcwd()
 
-# definition of teh directories to exclude
-#exclude_dir = ['before_update_Oct2018']
-files_to_exclude=[]
-for filename in all_files:
-    if any([s in filename for s in args.exclude_dir]):
-        files_to_exclude.append(filename)
+    # find all the summary files
+    #all_files = glob.glob('{}/**/summary*.txt'.format(pwd), recursive=True)
+    all_files = glob.glob('{}/**/RUNTIME.rpt'.format(pwd), recursive=True)
 
-# exclude files
-for f in files_to_exclude:
-    all_files.remove(f)
+    # definition of teh directories to exclude
+    #exclude_dir = ['before_update_Oct2018']
+    files_to_exclude=[]
+    for filename in all_files:
+        if any([s in filename for s in args.exclude_dir]):
+            files_to_exclude.append(filename)
 
-# define dataframe for output
-data_global = pd.DataFrame(columns=['Variable'])
+    # exclude files
+    for f in files_to_exclude:
+        all_files.remove(f)
 
-# parse each file of the list
-for ifile,filename in enumerate(all_files):
-    print('----------------------------------------------------------------------')
-    print('Parsing file {}'.format(filename))
+    # define dataframe for output
+    data_global = pd.DataFrame(columns=['Variable'])
 
-    path_dir, exp_name = extract_dir_exp(filename)
+    # parse each file of the list
+    for ifile,filename in enumerate(all_files):
+        print('----------------------------------------------------------------------')
+        print('Parsing file {}'.format(filename))
 
-    # creation of a summary file from the report file (written by Craypat tool)
-    summary_file_exp = create_summary_file(filename,path_dir,exp_name)
+        path_dir, exp_name = extract_dir_exp(filename)
+
+        # creation of a summary file from the report file (written by Craypat tool)
+        summary_file_exp = create_summary_file(filename,path_dir,exp_name)
    
-    # extract exp_name
-    #exp_name = os.path.basename(summary_file_exp).split('summary_')[1].rstrip('.txt')
+        # extract exp_name
+        #exp_name = os.path.basename(summary_file_exp).split('summary_')[1].rstrip('.txt')
 
-    # read file
-    data_single = pd.read_csv(summary_file_exp, sep=':', header=None) 
+        # read file
+        data_single = pd.read_csv(summary_file_exp, sep=':', header=None) 
 
-    # rename first column into 'Variable'
-    data_single.rename(columns={ 0 : "Variable" },inplace=True)
+        # rename first column into 'Variable'
+        data_single.rename(columns={ 0 : "Variable" },inplace=True)
 
-    # retrieve number of columns
-    ncol = len(data_single.columns) 
+        # retrieve number of columns
+        ncol = len(data_single.columns) 
 
-    # combine all the columns instead Variable together (the HH:MM:SS were separated by mistake )
-    data_single[exp_name] = data_single[1]
-    del data_single[1]  
-    for icol in np.arange(2,ncol): 
-        data_single[exp_name] = data_single[exp_name] + ':' + data_single[icol].fillna("")
-        del data_single[icol] 
+        # combine all the columns instead Variable together (the HH:MM:SS were separated by mistake )
+        data_single[exp_name] = data_single[1]
+        del data_single[1]  
+        for icol in np.arange(2,ncol): 
+            data_single[exp_name] = data_single[exp_name] + ':' + data_single[icol].fillna("")
+            del data_single[icol] 
     
-    # delete '::' in case it was added in teh column combination
-    data_single[exp_name] = data_single[exp_name].str.rstrip(':')
+        # delete '::' in case it was added in teh column combination
+        data_single[exp_name] = data_single[exp_name].str.rstrip(':')
 
-    # get the jobnumber from the slurm filename in the directory
-    jobnumber = get_jobnumber(path_dir)
+        # get the jobnumber from the slurm filename in the directory
+        jobnumber = get_jobnumber(path_dir)
 
-     # add the jobnumber in the dtaaframe as a new line
-    data_single.loc[len(data_single)] =  ['Job Number',jobnumber]
+        # add the jobnumber in the dtaaframe as a new line
+        data_single.loc[len(data_single)] =  ['Job Number',jobnumber]
  
-    # fill the outter dataframe
-    data_global = pd.merge(data_global, \
-                           data_single.rename(columns={exp_name:exp_name.replace('_',' ')}), \
-                           how='outer', on=['Variable'])
+        # fill the outter dataframe
+        data_global = pd.merge(data_global, \
+                               data_single.rename(columns={exp_name:exp_name.replace('_',' ')}), \
+                               how='outer', on=['Variable'])
 
 
 
-# write out the global dataframe
-data_global.to_csv('{}.csv'.format(args.out_f),sep=',', index=False)
+    # write out the global dataframe
+    data_global.to_csv('{}.csv'.format(args.out_f),sep=',', index=False)
  
