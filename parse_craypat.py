@@ -10,9 +10,18 @@ import numpy as np
 import pandas as pd   # needs pythn modules to be loaded:  module load cray-python/3.6.5.1 PyExtensions/3.6.5.1-CrayGNU-18.08
 import os
 import glob
+import argparse
 
-# name of the output file
-out_f = 'Craypat_table'
+# parsing arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--exclude', '-e', dest = 'exclude_dir',\
+                    default = [],\
+                    nargs = '*',\
+                    help='folders to exclude.') 
+parser.add_argument('--out_f', '-o', dest = 'out_f',\
+                    default = 'Craypat_table',\
+                    help = 'filename of the output.') 
+args = parser.parse_args()
 
 # get current directory
 pwd = os.getcwd()
@@ -21,10 +30,10 @@ pwd = os.getcwd()
 all_files = glob.glob('{}/**/summary*.txt'.format(pwd), recursive=True)
 
 # definition of teh directories to exclude
-exclude_dir = ['before_update_Oct2018']
+#exclude_dir = ['before_update_Oct2018']
 files_to_exclude=[]
 for filename in all_files:
-    if any([s in filename for s in exclude_dir]):
+    if any([s in filename for s in args.exclude_dir]):
         files_to_exclude.append(filename)
 
 # exclude files
@@ -98,5 +107,5 @@ for ifile,filename in enumerate(all_files):
 
 
 # write out the global dataframe
-data_global.to_csv('{}.csv'.format(out_f),sep=',', index=False)
+data_global.to_csv('{}.csv'.format(args.out_f),sep=',', index=False)
  
