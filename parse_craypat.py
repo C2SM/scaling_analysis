@@ -11,7 +11,78 @@ import pandas as pd   # needs pythn modules to be loaded:  module load cray-pyth
 import os
 import glob
 import argparse
+import subprocess
+import sys
 
+def create_summary_file(runtime_file, path_dir_for_sumfile, exp_name):
+    # Create summary_[label_model_name].txt from RUNTIME (written by craypat tool) file
+    # input is runtime file
+    
+    out_summary_file = os.path.join(path_dir_for_sumfile,'summary_{}.txt'.format(exp_name))
+
+    # command to apply (comes form cscs website :https://user.cscs.ch/access/report/ )
+    cmd = 'grep -A 14 CrayPat/X {} > {}'.format(runtime_file, out_summary_file)
+
+    # call system command
+    status = subprocess.call(cmd, shell=True)
+ 
+    if status != 0:
+        print ('WARNING: File {} was not read properly'.format(out_summary_file))
+        print ('Child was terminated by signal {}'.format(status))
+    else :
+        print ('Summary file was created : {}'.format(out_summary_file)) 
+ 
+    return(out_summary_file)
+
+def extract_dir_exp(runtime_file):
+    # get the general path to exp dir
+
+    path_dir = os.path.dirname(runtime_file.split('+')[0])
+    exp_name = os.path.basename(path_dir)
+
+    return (path_dir,exp_name)
+
+def get_slurm_file_dep_mod(path_dir):
+    # get the path to the slurm file depending on the model family 
+
+    gen_mod_family = os.path.join(path_dir).split('/')[-2].upper()
+    if gen_mod_family.startswith('ICON'):
+        slurm_file_path = glob.glob('{}/LOG*.o'.format(path_dir))
+    elif (gen_mod_family.startswith('ECHAM') or gen_mod_family.startswith('MPI-ESM')):
+        slurm_file_path = glob.glob('{}/slurm*.txt'.format(path_dir))
+    else:
+        print("Warning: No rule for finding the slurm filefor the file {}.".format(filename))
+        print("Rules for finding slurm files are only defined for module family : ECHAM, MPI-ESM or ICON ")
+        print('The family model found is : {}'.format(gen_mod_family)) 
+        slurm_file_path = []
+
+    return(slurm_file_path)
+
+def get_jobnumber_from_slurmfile(slurm_file_path):
+    # get the jobnumber from the slurm filename
+
+    if not len(slurm_file_path) == 1 :
+        print ("Warning, several or no slurm file.")
+        print ("The following files are found:{}".format("\n".join(slurm_file_path)))
+        print ("Set job number to 0")
+        jobnumber = "0"
+    else:
+        jobnumber = os.path.basename(slurm_file_path[0]).split('.')[-2]
+
+    # remove the submission number (especially for echam run)
+    jobnumber = jobnumber.split('_')[-1]
+
+    return(jobnumber)
+
+def get_jobnumber(path_dir):
+
+    # add look for Jobnumber of the craypat run - > need to find slurm file
+    slurm_file_path = get_slurm_file_dep_mod(path_dir)
+
+    # get the jobnumber from the slurm filename
+    jobnumber = get_jobnumber_from_slurmfile(slurm_file_path)
+
+    return(jobnumber)
 # parsing arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--exclude', '-e', dest = 'exclude_dir',\
@@ -27,7 +98,8 @@ args = parser.parse_args()
 pwd = os.getcwd()
 
 # find all the summary files
-all_files = glob.glob('{}/**/summary*.txt'.format(pwd), recursive=True)
+#all_files = glob.glob('{}/**/summary*.txt'.format(pwd), recursive=True)
+all_files = glob.glob('{}/**/RUNTIME.rpt'.format(pwd), recursive=True)
 
 # definition of teh directories to exclude
 #exclude_dir = ['before_update_Oct2018']
@@ -45,18 +117,19 @@ data_global = pd.DataFrame(columns=['Variable'])
 
 # parse each file of the list
 for ifile,filename in enumerate(all_files):
+    print('----------------------------------------------------------------------')
     print('Parsing file {}'.format(filename))
 
-    # get name of the exp
-    try:
-        exp_name = os.path.basename(filename).split('summary_')[1].rstrip('.txt')
-    except:
-        exp_name = "UNKNOWN_{}".format(ifile)
-        print("Warning: Found a summary file whithout any model label:{}".format(filename)) 
-        print("Set model label:{}".format(exp_name))
+    path_dir, exp_name = extract_dir_exp(filename)
+
+    # creation of a summary file from the report file (written by Craypat tool)
+    summary_file_exp = create_summary_file(filename,path_dir,exp_name)
+   
+    # extract exp_name
+    #exp_name = os.path.basename(summary_file_exp).split('summary_')[1].rstrip('.txt')
 
     # read file
-    data_single = pd.read_csv(filename, sep=':', header=None) 
+    data_single = pd.read_csv(summary_file_exp, sep=':', header=None) 
 
     # rename first column into 'Variable'
     data_single.rename(columns={ 0 : "Variable" },inplace=True)
@@ -74,27 +147,8 @@ for ifile,filename in enumerate(all_files):
     # delete '::' in case it was added in teh column combination
     data_single[exp_name] = data_single[exp_name].str.rstrip(':')
 
-    # add look for Jobnumber of the craypat run - > need to find slurm file
-    if exp_name.upper().startswith('ICON'):
-        slurm_file_path = glob.glob('{}/LOG*.o'.format(os.path.dirname(filename)))
-    elif (exp_name.upper().startswith('ECHAM') or exp_name.upper().startswith('MPI-ESM')):        
-        slurm_file_path = glob.glob('{}/slurm*.txt'.format(os.path.dirname(filename)))
-    else:
-        print("Warning: No rule for finding the slurm filefor the file {}.".format(filename))
-        print("Rules for finding slurm files are only defined for summary files named summary_label*.txt, where label is one of ECHAM, MPI_ESM or ICON ")
-        slurm_file_path = []
-
-    # get the jobnumber from the slurm filename
-    if not len(slurm_file_path) == 1 :
-        print ("Warning, several or no slurm file.")
-        print ("The following files are found:{}".format("\n".join(slurm_file_path)))
-        print ("Set job number to 0")
-        jobnumber = "0"
-    else:
-        jobnumber = os.path.basename(slurm_file_path[0]).split('.')[-2]
-
-    # remove the submission number (especially for echam run)
-    jobnumber = jobnumber.split('_')[-1]
+    # get the jobnumber from the slurm filename in the directory
+    jobnumber = get_jobnumber(path_dir)
 
      # add the jobnumber in the dtaaframe as a new line
     data_single.loc[len(data_single)] =  ['Job Number',jobnumber]
