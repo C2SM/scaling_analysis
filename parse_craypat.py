@@ -18,20 +18,26 @@ def create_summary_file(runtime_file, path_dir_for_sumfile, exp_name):
     # Create summary_[label_model_name].txt from RUNTIME (written by craypat tool) file
     # input is runtime file
     
+    # final summary file for this exp
     out_summary_file = os.path.join(path_dir_for_sumfile,'summary_{}.txt'.format(exp_name))
 
-    # command to apply (comes form cscs website :https://user.cscs.ch/access/report/ )
-    cmd = 'grep -A 14 CrayPat/X {} > {}'.format(runtime_file, out_summary_file)
+    if not os.path.isfile(runtime_file):
+        print('Warning: Runtime file is not a proper file : {}'.format(runtime_file)) 
 
-    # call system command
-    status = subprocess.call(cmd, shell=True)
- 
-    if status != 0:
-        print ('WARNING: File {} was not read properly'.format(out_summary_file))
-        print ('Child was terminated by signal {}'.format(status))
-    else :
-        print ('Summary file was created : {}'.format(out_summary_file)) 
- 
+    # copy part of runtime file into summary file
+    with open(runtime_file) as fin, open(out_summary_file, 'w') as fout:
+        for line in fin:
+            # get starting point
+            if line.startswith("#"):
+               continue
+            
+            # copy the line into fout
+            fout.write(line)
+            
+            # ending point
+            if line.startswith('I/O Write Rate'):
+               break
+
     return(out_summary_file)
 
 def extract_dir_exp(runtime_file):
