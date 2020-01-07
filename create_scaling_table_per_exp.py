@@ -1,13 +1,15 @@
 #!/usr/bin/python
 #
-# Script to parse the slurm or echam6.log file to get the wallclock time, create a table containing wallclock time and associated speed-up
-# mouve the files in project.
+# Script to parse all the slurm or echam6.log files for one experiment (runned on different number of nodes)
+# to extract the wallclock time. It creates a table containing wallclock time and associated scaling data
+# (Efficiency, Speed-up, NH,...).
 #
 #
-#Example : perf_speedup.py -basis_name  prf_echam61ham22_T63L47 -ncpus_incr 32 -niter 10
+#Example : create_scaling_table_per_exp.py -basis_name  prf_echam61ham22_T63L47 -ncpus_incr 32 -niter 10
 #
 # C. Siegenthaler (C2SM) , July 2015
-# C. Siegenthaler (C2SM): adaptation for ICON, November 2017
+# C. Siegenthaler (C2SM) : adaptation for ICON, November 2017
+# C. Siegenthaler (C2SM) : modifications, December 2019
 #
 ############################################################################################
 
@@ -16,10 +18,9 @@ import numpy as np
 import os
 import argparse
 import glob
-import shutil
 import datetime
 import itertools
-import pandas as pd # need to load module load cray-python/2.7.15.1 PyExtensions/2.7.15.1-CrayGNU-18.08
+import pandas as pd # need to load module load PyExtensions on Piz Daint
 
  # defines defaults values for nnodes, wallclock and date
 default_wallclock={'wallclock' : np.nan, 'nnodes' : 10000, 'date_run' : datetime.datetime(1900, 1, 1).strftime("%Y-%m-%d %H:%M:%S")}

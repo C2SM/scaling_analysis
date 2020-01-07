@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Script to use perftool analysis script on different experiments in different folders
+# Script to use the script "perf_speedup.py" perftool analysis script on different experiments in different folders
 #
 #
 # Example : python anaylse_different_exp_at_once.py
@@ -61,7 +61,7 @@ for exp in exps_to_anaylse:
     print ('DIR : {}'.format(exp.path))
     os.chdir(exp.path)
     
-    subprocess.call(["python", os.path.join(path_script,"perf_speedup.py"), "-e", exp.name,"-m",exp.mod,"-y", str(exp.factor)])
+    subprocess.call(["python", os.path.join(path_script,"create_scaling_table_per_exp.py"), "-e", exp.name,"-m",exp.mod,"-y", str(exp.factor)])
 
     subprocess.call(["rsync", "-av", "{}.csv".format(exp.name), p_to_sync])
     print ('---------------------------------------')
