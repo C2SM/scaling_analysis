@@ -14,12 +14,27 @@ import argparse
 import subprocess
 import sys
 
+def decide_summary_filename(runtime_file,path_dir_for_sumfile,exp_name):
+    # create filename of teh summary file
+    # for MPI-ESM, there are two models running in  paralell, each of them create a runtime file, 
+    # so each of them needs a summary file
+
+    if len(glob.glob('{}/*+*'.format(path_dir_for_sumfile))) > 1:
+        mod = os.path.relpath(runtime_file,path_dir_for_sumfile).split('+')[0]
+        filename_sum = 'summary_{}_{}.txt'.format(exp_name,mod)
+    else:
+        filename_sum = 'summary_{}.txt'.format(exp_name)
+
+    out_summary_file = os.path.join(path_dir_for_sumfile,filename_sum)
+
+    return(out_summary_file)
+
 def create_summary_file(runtime_file, path_dir_for_sumfile, exp_name):
     # Create summary_[label_model_name].txt from RUNTIME (written by craypat tool) file
     # input is runtime file
     
     # final summary file for this exp
-    out_summary_file = os.path.join(path_dir_for_sumfile,'summary_{}.txt'.format(exp_name))
+    out_summary_file = decide_summary_filename(runtime_file,path_dir_for_sumfile, exp_name)
 
     if not os.path.isfile(runtime_file):
         print('Warning: Runtime file is not a proper file : {}'.format(runtime_file)) 
@@ -132,9 +147,6 @@ if __name__ == "__main__":
 
         # creation of a summary file from the report file (written by Craypat tool)
         summary_file_exp = create_summary_file(filename,path_dir,exp_name)
-   
-        # extract exp_name
-        #exp_name = os.path.basename(summary_file_exp).split('summary_')[1].rstrip('.txt')
 
         # read file
         data_single = pd.read_csv(summary_file_exp, sep=':', header=None) 
