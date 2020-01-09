@@ -5,7 +5,7 @@
 # (Efficiency, Speed-up, NH,...).
 #
 #
-#Example : create_scaling_table_per_exp.py -basis_name  prf_echam61ham22_T63L47 -ncpus_incr 32 -niter 10
+#Example : create_scaling_table_per_exp.py -e my_exp -m icon -y 1
 #
 # C. Siegenthaler (C2SM) , July 2015
 # C. Siegenthaler (C2SM) : adaptation for ICON, November 2017
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     parser.add_argument('--fact_nh_yr', '-y', dest = 'factor_nh_year',\
                         default = 12,\
                         type = int,\
-                        help = 'factor to multiply getting NH per year')
+                        help = 'factor to multiply for getting NH per year')
 
     parser.add_argument('--no_sys_report', action='store_true',\
                         help = 'no time report provided by the system, per defualt, the wallclock will be taken from this report. If this option enabled, the wallclok will computed in a different way')                    

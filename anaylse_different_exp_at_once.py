@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Script to use the script "perf_speedup.py" perftool analysis script on different experiments in different folders
+# Script to use the script "create_scaling_table_per_exp.py" on different experiments in different folders
 #
 #
 # Example : python anaylse_different_exp_at_once.py

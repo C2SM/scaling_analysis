@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
-# Read the .csv performance files and plot a figure with one line per exp.
+# Read the .csv scaling analysis files for different experiences and plot a figure with one line per exp.
 # Merge all .csv files (one per exp) into one big file containing all exps
+# By defauylt, all the csv files present in 'path' are used. The definition if the plotting properties of each experiment is in defined in 'def_exps_plot.py'.
  
 # Colombe Siegenthaler    C2SM (ETHZ) , 09.2108
 
@@ -35,7 +36,8 @@ path = '/Users/colombsi/Documents/CSCS/perfs/2019/perfs_per_config'
 #files_to_read = [defexp.iconham_gcc, defexp.icon_amip_6h_intel, defexp.icon_amip_1m_intel,defexp.icon_lam_cray]
 
 # all mods, best config
-files_to_read = [defexp.iconham_gcc, defexp.icon_amip_6h_intel, defexp.icon_amip_1m_intel,defexp.icon_lam_cray, defexp.e63h23_T63L47_1m, defexp.esm_ham_T63L47_1m]
+#files_to_read = [defexp.iconham_gcc, defexp.icon_amip_6h_intel, defexp.icon_amip_1m_intel,defexp.icon_lam_cray, defexp.e63h23_T63L47_1m, defexp.esm_ham_T63L47_1m]
+files_to_read = [defexp.icon_lam_final, defexp.icon_amip_6h_final, defexp.icon_amip_1m_final, defexp.icon_ham_final, defexp.e63h23_1m_final, defexp.esmham_1m_final ]
 
 # all files in folder
 #files_to_read = []
@@ -46,7 +48,7 @@ name_plot = 'all-mods'
 
 lo_wc_min = True       # transform Wallclock in minutes
 lo_write_csv = True    # write csv file of data in the plot
-lo_best_conf = False   # pllot the best configuration on Efficiency plot
+lo_best_conf = True    # plot the best configuration on Efficiency plot
 
 #----------------------Begin of script-----------------------------------------------------------
 
@@ -101,7 +103,7 @@ for exp in files_to_read:
         best_n = exp.bestconf
         if best_n in dt.N_Nodes.values:
             perf_chosen = float(dt[dt.N_Nodes == best_n].Efficiency)
-            ax.scatter(best_n, perf_chosen, s=150.,color='k')
+            ax.scatter(best_n, perf_chosen, s=80.,color='k')
         else:	
             print ("Warning, the number of nodes defined for the best configuration ({}) is not in the experiment definition".format(best_n))
             print ("The number of nodes in the csv files are: ")

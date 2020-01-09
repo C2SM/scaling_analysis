@@ -121,7 +121,6 @@ if __name__ == "__main__":
     pwd = os.getcwd()
 
     # find all the summary files
-    #all_files = glob.glob('{}/**/summary*.txt'.format(pwd), recursive=True)
     all_files = glob.glob('{}/**/RUNTIME.rpt'.format(pwd), recursive=True)
 
     # definition of teh directories to exclude

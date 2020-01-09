@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
-# Wrapper to send several runs using the jobscriptoolkit
+# Wrapper to send several ICON (-HAM) runs
 # for performance anaylsis with different number of cpus
 #
-# Usage: go into your echam run directory, prepare the basis run set-up 
-# call the present script 
+# This script uses the automatic running script generation in ICON (make_target_runscript).
+#
+# Usage : send_several_run_ncpus_perf_ICON.py -b $SCRATCH/icon-eniac/ -e my_exp -n 10 12 15
 #
 # C. Siegenthaler (C2SM) , July 2015
 #

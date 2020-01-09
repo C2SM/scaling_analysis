@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Wrapper to send several runs using the jobscriptoolkit
+# Wrapper to send several ECHAM-(HAM) runs using the jobscriptoolkit
 # for performance anaylsis with different number of cpus
 #
 # Usage: go into your echam run directory, prepare the basis run set-up 
@@ -20,33 +20,33 @@ if __name__ == "__main__":
 
     # parsing arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-basis_folder', dest = 'basis_folder',\
+    parser.add_argument('--basis_folder', '-b', dest = 'basis_folder',\
                             help='basis folder run containing the configuration as to use as template. The name has to finish with "_cpusXX".') 
-    parser.add_argument('-ncpus_incr', dest = 'cpus_incr',\
+    parser.add_argument('--ncpus_incr', dest = 'cpus_incr',\
                             default = 16,\
                             type = int,\
                             help = 'increment of cpus number between each simulation.')
-    parser.add_argument('-niter', dest = 'niter',\
+    parser.add_argument('--niter', dest = 'niter',\
                             default = 10,\
                             type = int,\
                             help = 'number of iterations (niter simulations will be performed with the number of cpus for each simulation is [1,2,....,niter-1]*ncpus_incr.')
 
-    parser.add_argument('-nbeg_iter', dest = 'nbeg_iter',\
+    parser.add_argument('--nbeg_iter', dest = 'nbeg_iter',\
                             default = 1,\
                             type = int,\
                             help = 'begining of the iteration (the simulations will be performed with the number of cpus for each simulation is [nbeg_iter,nbeg_iter+1....,niter-1]*ncpus_incr.')
 
-    parser.add_argument('-ncpus', dest = 'cpus_to_proceed',\
+    parser.add_argument('--ncpus', dest = 'cpus_to_proceed',\
                             default = [],\
                             type = int,\
                             nargs = '*',\
                             help = 'cups number of the simulation to analyse.This have priority over -ncpus_incr, -niter and -nbeg_iter')  
-    parser.add_argument('-nnodes', dest = 'nodes_to_proceed',\
+    parser.add_argument('--nnodes', '-n', dest = 'nodes_to_proceed',\
                             default = [],\
                             type = int,\
                             nargs = '*',\
                             help = 'nodes number of the simulation to analyse. This have priority over -ncpus_incr, -niter and -nbeg_iter')
-    parser.add_argument('-cpu_per_node', dest = 'cpu_per_node',\
+    parser.add_argument('--cpu_per_node', dest = 'cpu_per_node',\
                             default = 12,\
                             type = int,\
                             help = 'numper of CPUs per node') 
@@ -87,7 +87,6 @@ if __name__ == "__main__":
 
     # setting filename basis exp
     setting_bas_exp = os.path.join(args.basis_folder,'settings_{}'.format(exp_name_bas_exp))
-    print setting_bas_exp
 
     # check if the basis name is finishing by "cpusXX" and  assign kernel name of teh new experiments
     if (exp_name_bas_exp.split('_')[-1].startswith('cpus')):
