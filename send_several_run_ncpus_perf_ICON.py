@@ -22,8 +22,9 @@ def create_runscript(exp_base,nnodes):
     exp_nnodes = "%s_nnodes%i" %(exp_base,nnodes)
 
     # create scripts
-    os.system("./config/make_target_runscript in_folder=run in_script=exp.%s in_script=exec.iconrun out_script=exp.%s.run EXPNAME=%s memory_model='large' omp_stacksize=200M grids_folder='/scratch/snx3000/colombsi/ICON_input/grids' no_of_nodes=%i" %(exp_base,exp_nnodes,exp_nnodes,nnodes))
+    os.system("/bin/bash ./run/make_target_runscript in_folder=run in_script=exp.{} in_script=exec.iconrun out_script=exp.{}.run EXPNAME={} memory_model='large' omp_stacksize=200M grids_folder='/scratch/snx3000/colombsi/ICON_input/grids' no_of_nodes={}".format(exp_base,exp_nnodes,exp_nnodes,nnodes))
 
+ 
     #return name of exp
     return(exp_nnodes)
 
