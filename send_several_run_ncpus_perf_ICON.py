@@ -17,9 +17,9 @@ import os
 import argparse
 import datetime
 
-def create_runscript(exp_base,nnodes):
+def create_runscript(exp_base,output_postfix,nnodes):
     # name experiment
-    exp_nnodes = "%s_nnodes%i" %(exp_base,nnodes)
+    exp_nnodes = "{}{}_nnodes{}".format(exp_base,output_postfix,nnodes)
 
     # create scripts
     os.system("/bin/bash ./run/make_target_runscript in_folder=run in_script=exp.{} in_script=exec.iconrun out_script=exp.{}.run EXPNAME={} memory_model='large' omp_stacksize=200M grids_folder='/scratch/snx3000/colombsi/ICON_input/grids' no_of_nodes={}".format(exp_base,exp_nnodes,exp_nnodes,nnodes))
@@ -38,6 +38,9 @@ if __name__ == "__main__":
     parser.add_argument('--exp_base', '-e', dest = 'exp_base',\
                             default = 'atm_amip_1month',\
                             help='basis model folder e.g. atm_amip_1month')
+    parser.add_argument('--output_postfix', '-o', dest = 'output_postfix',\
+                            default = '',\
+                            help='postfix for the output name of the running scripts e.g. "_cray" will give exp.atm_amip_cray_nnodesX.run')
     parser.add_argument('--arrange_nnodes', '-a', dest = 'arrange_nnodes',\
                             default = [1,11,1],\
                             type = int,\
@@ -52,6 +55,10 @@ if __name__ == "__main__":
                             default = None,\
                             type = str,\
                             help = 'wallclock to use when sending the run to the batch system')    
+    parser.add_argument('--oneNH','-NH', dest = 'oneNH' ,\
+                            default = 24,\
+                            type = int,\
+                            help = 'estimation of one node hour (wallclock time in hour when running on 1 node). This will be used for estimating a wallclock to use. In case -w is set, oneNH is not used.')
 
     args = parser.parse_args()
 
@@ -74,7 +81,7 @@ if __name__ == "__main__":
     path_run_dir = os.path.join(args.basis_folder,"run")
 
     # estimated time for one node
-    one_node_hour = 24
+    one_node_hour = args.oneNH
 
     # loop over number of nodes to create scripts
     for nnodes in args.nodes_to_proceed:
@@ -84,7 +91,7 @@ if __name__ == "__main__":
 
 	# create the runscripts with the icon script creating tool 
         print ("Create runscript")
-        new_script = create_runscript(exp_base,nnodes)
+        new_script = create_runscript(exp_base,args.output_postfix,nnodes)
 	
 	# path to the newly created script (needed for launching it)
         path_to_newscript = os.path.join(path_run_dir,"exp.%s.run" %new_script)
