@@ -84,7 +84,9 @@ for exp in exps_to_analyse:
        filename = '{}{}.csv'.format(exp.name,exp.comp)
        file_to_copy = os.path.join(exp.path,'run',filename)
 
-       print ('Copy file {}'.format(filename))
-       shutil.copy2(file_to_copy,p_to_sync)
-
+       if os.path.isfile(file_to_copy):
+           print ('Copy file {}'.format(filename))
+           shutil.copy2(file_to_copy,p_to_sync)
+       else:
+           print('WARNING : the summary file does not exists : {}'.format(file_to_copy))
     print ('---------------------------------------')
