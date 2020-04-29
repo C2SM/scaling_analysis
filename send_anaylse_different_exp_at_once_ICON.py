@@ -24,9 +24,19 @@ class exp_class:
         self.factor = factor
         self.comp = comp
 
+n_step = 1                  # step of the analyse : 1 -> send jobs
+                            #                       2 -> analyse and synchronise csv file in home
 lo_send_batch = False
-lo_analyse_exps = True
-lo_sync_home = True
+lo_analyse_exps = False
+lo_sync_home = False
+
+if n_step == 1 :
+    lo_send_batch = True
+elif n_step == 2 :
+    lo_analyse_exps = True
+    lo_sync_home = True
+else :
+    print ('Info : Uses default : lo_send_batch = {} , lo_analyse_exps = {}, lo_sync_home = {}'.format(lo_send_batch,lo_analyse_exps,lo_sync_home))
 
 p_to_sync = '/users/colombsi/scaling_ana/'
 
