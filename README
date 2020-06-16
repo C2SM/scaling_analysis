@@ -14,6 +14,9 @@ Recipe for scaling analysis with ECHAM/ICON-(HAM)
 1) Configure and Compile your model as usual.
 
 2) Prepare your running script
+If you are on Piz Daint (CSCS), you need to load the following modules before using the python scripts:
+module load cray-python PyExtensions python_virtualenv
+You might need to construct a virtual environment if some packages are missing (http://usertest.cscs.ch/tools/interactive/python/ )
 
 * ICON :
 i) Prepare your machine-independent setting file "my_exp" (e.g. exp.atm_amip, without the '.run').
@@ -31,6 +34,11 @@ For example for running "my_exp" on 1, 10,12 and 16 nodes:
 
 With the command above, 4 running scripts will be created (exp.my_exp_nnodes1.run, exp.my_exp_nnodes10.run, exp.my_exp_nnodes12.run and exp.my_exp_nnodes15.run), and each of them will be launched.
 
+To send several experiments on different node numbers at once, use: send_analyse_different_exp_at_once_ICON.py form inside path_to_scaling_analysis_tool :
+> python send_analyse_different_exp_at_once_ICON.py
+The script send_analyse_different_exp_at_once_ICON.py (n_step = 1) is a wrapper which calls send_several_run_ncpus_perf_ICON.py for different experiments (for example different set-ups, or compilers).
+The script send_analyse_different_exp_at_once_ICON.py (n_step = 2) is a wrapper which get the wallclocks from the log files for different experiments (for example different set-ups, or compilers) (point 4 of this README).
+
 * ECHAM
 Use send_several_run_ncpus_perf.py which create and send several running scripts using the option -o of the jobsubm_echam script.
 For example, sending the my_exp run on 1, 10, 12 and 15 nodes:
@@ -44,19 +52,17 @@ With the command above, 4 running folder will be created based on the running fo
 * ICON
 Use the option -m icon
 > python [path_to_scaling_analysis_tool]/create_scaling_table_per_exp.py -e my_exp -m icon
+or for different experiments at once : send_analyse_different_exp_at_once_ICON.py (n_step = 2) (cf point 3)
 
 * ECHAM
 Use the option -m icon
 > python [path_to_scaling_analysis_tool]/create_scaling_table_per_exp.py -e my_exp -m echam-ham
 
-FOr both model type, this creates a table my_exp.csv which contains the wallclock , efficiency and NH for each run.
+For both model type, this creates a table my_exp.csv which contains the wallclock , efficiency and NH for each run.
 Caution, for using this script, the module PyExtensions needs to be loaded.
 
-4b) Optional, only used for ICON till now: If you are performing different scaling analysis in parallel (ie one for each different experiments, e.g. exp.atm_amip_6h, exp.atm_amip_1m). There is the possibility to call create_scaling_table_per_exp.py for each of the experiment inside from the script 'anaylse_different_exp_at_once.py'.
-In 'anaylse_different_exp_at_once.py', first define the paths to the experiments you want to analyse and the experiment names and then type:
-> python anaylse_different_exp_at_once.py
-
-5) Create a summary plot and table of the variable you wish (Efficiency, NH, Wallclock) for different experiments with respect to number of node:
+5) Create a summary plot and table of the variable you wish (Efficiency, NH, Wallclock) for different experiments with respect to number of node.
+If needed you can define the line properties of each experiment in def_exps_plot.py.
 > plot_perfs.py
 
 ---------------------------------------------------------------

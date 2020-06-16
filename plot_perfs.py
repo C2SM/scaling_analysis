@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
-# Read the .csv scaling analysis files for different experiences and plot a figure with one line per exp.
+#figure with one line per exp.
 # Merge all .csv files (one per exp) into one big file containing all exps
 # By defauylt, all the csv files present in 'path' are used. The definition if the plotting properties of each experiment is in defined in 'def_exps_plot.py'.
  
 # Colombe Siegenthaler    C2SM (ETHZ) , 09.2108
 
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages  # multiple pages in pdf
+from matplotlib.backends.backend_pdf import PdfPages  # tiple pages in pdf
 import pandas as pd
 import os
 import glob
@@ -29,13 +29,15 @@ files_to_read = [defexp.icon_amip_cray,defexp.icon_amip_1m_cray,defexp.icon_amip
 # all files in folder
 #files_to_read = []
 
-variables = ['Efficiency','Wallclock','Speedup','Node_hours','NH_year']
+variables = ['Efficiency','Wallclock','Speedup','NH_year']
 #variables = ['Wallclock']
 name_plot = 'ICON-AMIP-allcomp'
 
 lo_wc_min = True       # transform Wallclock in minutes
 lo_write_csv = True    # write csv file of data in the plot
+lo_savefig = True
 lo_best_conf = True    # plot the best configuration on Efficiency plot
+lo_zoom_wc = False
 
 # x-axis lim
 min_N = None
@@ -53,6 +55,10 @@ unit = {'Wallclock' : 'seconds', 'Efficiency' : '%'}
 if lo_wc_min:
     unit['Wallclock'] = 'minutes'
 
+# filename
+if lo_zoom_wc:
+    name_plot += '_zoom'
+
 # Define figure
 fig, ax = plt.subplots()
 
@@ -60,7 +66,8 @@ fig, ax = plt.subplots()
 out_df = pd.DataFrame(columns=['N_Nodes'])
 
 # open multipage pdf
-pp = PdfPages(os.path.join(path,'{}.pdf'.format(name_plot)))
+if lo_savefig:
+    pp = PdfPages(os.path.join(path,'{}.pdf'.format(name_plot)))
 
 for var_to_plot in variables :
 
@@ -127,7 +134,8 @@ for var_to_plot in variables :
     ax.set_xlim([min_N,max_N])
     ax.set_xticks(np.arange(min_N, max_N, step=5),minor=True)
     ax.set_xlabel('# Nodes')
-#    ax.set_ylim([0,10])
+    if lo_zoom_wc:
+        ax.set_ylim([0,7])
 
     #y-axis
     if var_to_plot == 'Efficiency':
@@ -150,17 +158,13 @@ for var_to_plot in variables :
     # sort global dataframe
     out_df.sort_values(by=['N_Nodes'], ascending = [1],inplace=True)
 
-    if len(name_plot) > 0:
-         name_plot = '_{}'.format(name_plot)
-
-    # savefig
-    #fig.savefig(os.path.join(path,'{}{}.pdf'.format(var_to_plot,name_plot)))
-
     # write out global dataframe
     if lo_write_csv:
-        filename_out = os.path.join(path,'summary_{}_tot{}.csv'.format(var_to_plot,name_plot))
+        filename_out = os.path.join(path,'summary_{}_tot_{}.csv'.format(var_to_plot,name_plot))
         out_df.to_csv(filename_out,sep=';', index=False, float_format="%.2f")
 
-    pp.savefig()
+    if lo_savefig :
+        pp.savefig()
 
-pp.close()
+if lo_savefig:
+    pp.close()

@@ -3,7 +3,7 @@
 # Script to use the script "create_scaling_table_per_exp.py" on different experiments in different folders
 #
 #
-# Example : python anaylse_different_exp_at_once.py
+# Example : python send_analyse_different_exp_at_once.py
 #
 # C. Siegenthaler (C2SM) , December 2019
 #
@@ -38,18 +38,18 @@ elif n_step == 2 :
 else :
     print ('Info : Uses default : lo_send_batch = {} , lo_analyse_exps = {}, lo_sync_home = {}'.format(lo_send_batch,lo_analyse_exps,lo_sync_home))
 
+# folder to put the final files at the end
 p_to_sync = '/users/colombsi/scaling_ana/'
 
 path_script = os.getcwd()
 
+# initialize list of experiments to analyse
 exps_to_analyse =[]
 
 # define exps to proceed
 p = '/scratch/snx3000/colombsi/icon-c2sm/different_install/'
 exps_to_analyse.extend([exp_class(name = exp_name, path = os.path.join(p,comp), mod='icon', factor=1, comp='_{}'.format(comp)) \
                    for exp_name in ['atm_amip','atm_amip_6h','atm_amip_1m'] for comp in ['intel','cray','pgi']])
-
-folder_to_sync = '~/folder_output_scaling'
 
 for exp in exps_to_analyse:
     print ('EXP : {}'.format(exp.name))
