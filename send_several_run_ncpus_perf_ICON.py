@@ -28,6 +28,27 @@ def create_runscript(exp_base,output_postfix,nnodes):
     #return name of exp
     return(exp_nnodes)
 
+def define_and_submit_job(wallclocktime,path_to_newscript,nnodes):
+
+    hostname = os.uname()[1]
+
+    # Daint login nodes
+    if 'daint' in hostname:
+        submit_job = 'sbatch --time=%s %s' %(wallclocktime,path_to_newscript)
+
+    # Euler login nodes
+    elif 'eu-login' in hostname:
+        submit_job = 'bsub -W %s -n %s < %s' %(wallclocktime,nnodes,path_to_newscript)
+    
+    # unknown host
+    else:
+        print("Unknown host with hostname %s" %(hostname))
+        exit(-1)
+
+    print(submit_job)
+    os.system(submit_job)
+    print('--------------------------------------------------------------------------------------------------------')
+
 if __name__ == "__main__":
 
     # parsing arguments
@@ -107,7 +128,5 @@ if __name__ == "__main__":
             minutes = (seconds % 3600) // 60
             wallclocktime = "%02i:%02i:00" %(hours,minutes)
 
-        # job definition and submission
-        print ('sbatch --time=%s %s' %(wallclocktime,path_to_newscript))
-        os.system('sbatch --time=%s %s' %(wallclocktime,path_to_newscript))
-        print('--------------------------------------------------------------------------------------------------------')
+        # submit machine-dependent job
+        define_and_submit_job(wallclocktime,path_to_newscript,nnodes)
