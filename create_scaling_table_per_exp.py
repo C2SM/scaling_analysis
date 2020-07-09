@@ -63,13 +63,16 @@ if __name__ == "__main__":
                         help = 'factor to multiply for getting NH per year')
 
     parser.add_argument('--no_sys_report', action='store_true',\
-                        help = 'no time report provided by the system, per defualt, the wallclock will be taken from this report. If this option enabled, the wallclok will computed in a different way')                    
+                        help = 'no time report provided by the system, per defualt, the wallclock will be taken from this report. If this option enabled, the wallclock will computed in a different way')                    
 
     args = parser.parse_args()
 
     # assume you are in teh directory where all experiment directories are
     path_exps_dir = os.getcwd()
     path_out = path_exps_dir
+    
+    # hostname is needed when parsing the logfiles
+    hostname = os.uname()[1]
 
     # define files to analyse
     #----------------------------------------------------------------------
@@ -228,8 +231,21 @@ if __name__ == "__main__":
 
                 # get # nodes and wallclock
                 if args.no_sys_report:
-                    nodes_line = grep("no_of_nodes=",filename)["line"][0]
-                    nnodes = int(nodes_line.split('=')[1].split()[0].strip())
+
+                    # Daint login nodes
+                    if 'daint' in hostname:
+                        nodes_line = grep("no_of_nodes=",filename)["line"][0]
+                        nnodes = int(nodes_line.split(' ')[1].split()[0].strip())
+
+                    # Euler login nodes
+                    elif 'eu-login' in hostname:
+                        nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",filename)["line"][0]
+                        nnodes=int(nodes_line.split(' ')[6])
+
+                    # unknown host
+                    else:
+                        print("Unknown host with hostname %s" %(hostname))
+                        exit(-1)
    
                     wallclock = get_wallclock_icon(filename)["wc"].total_seconds()
                     date_run = get_wallclock_icon(filename)["st"]

@@ -38,7 +38,16 @@ def define_and_submit_job(wallclocktime,path_to_newscript,nnodes):
 
     # Euler login nodes
     elif 'eu-login' in hostname:
-        submit_job = 'bsub -W %s -n %s < %s' %(wallclocktime,nnodes,path_to_newscript)
+
+        # Icon requires at least 12 GB memory
+        min_required_mem=12000
+
+        if nnodes < 13:
+            mem_per_node = min_required_mem // nnodes
+        else:
+            mem_per_node = 1024
+
+        submit_job = 'bsub -W %s -R "rusage[mem=%s]" -n %s < %s' %(wallclocktime,mem_per_node,nnodes,path_to_newscript)
     
     # unknown host
     else:
