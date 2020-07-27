@@ -28,9 +28,8 @@ def create_runscript(exp_base,output_postfix,nnodes):
     #return name of exp
     return(exp_nnodes)
 
-def define_and_submit_job(wallclocktime,path_to_newscript,nnodes):
+def define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes):
 
-    hostname = os.uname()[1]
 
     # Daint login nodes
     if 'daint' in hostname:
@@ -38,21 +37,8 @@ def define_and_submit_job(wallclocktime,path_to_newscript,nnodes):
 
     # Euler login nodes
     elif 'eu-login' in hostname:
-
-        # Icon requires at least 12 GB memory
-        min_required_mem=12000
-
-        if nnodes < 13:
-            mem_per_node = min_required_mem // nnodes
-        else:
-            mem_per_node = 1024
-
-        submit_job = 'bsub -W %s -R "rusage[mem=%s]" -n %s < %s' %(wallclocktime,mem_per_node,nnodes,path_to_newscript)
+        submit_job = 'bsub -W %s -n %s < %s' %(wallclocktime,nnodes,path_to_newscript)
     
-    # unknown host
-    else:
-        print("Unknown host with hostname %s" %(hostname))
-        exit(-1)
 
     print(submit_job)
     os.system(submit_job)
@@ -91,6 +77,21 @@ if __name__ == "__main__":
                             help = 'estimation of one node hour (wallclock time in hour when running on 1 node). This will be used for estimating a wallclock to use. In case -w is set, oneNH is not used.')
 
     args = parser.parse_args()
+
+    hostname = os.uname()[1]
+
+    # Daint login nodes
+    if 'daint' in hostname:
+        print('Host is Daint')
+
+    # Euler login nodes
+    elif 'eu-login' in hostname:
+        print('Host is Euler')
+
+    # unknown host
+    else:
+        print("Unknown host with hostname %s" %(hostname))
+        exit(-1)
 
     # base experiment
     exp_base = args.exp_base
@@ -135,7 +136,15 @@ if __name__ == "__main__":
             seconds = datetime.timedelta(hours=np.float(one_node_hour)/nnodes).total_seconds()
             hours = seconds // 3600
             minutes = (seconds % 3600) // 60
-            wallclocktime = "%02i:%02i:00" %(hours,minutes)
+            if 'eu-login' in hostname:
+                # ensure no -W 0:00 request
+                if seconds < 1200:
+                    minutes=20
+                wallclocktime = "%02i:%02i" %(hours,minutes)
+            else:
+                wallclocktime = "%02i:%02i:00" %(hours,minutes)
+
+                
 
         # submit machine-dependent job
-        define_and_submit_job(wallclocktime,path_to_newscript,nnodes)
+        define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes)

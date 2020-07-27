@@ -65,6 +65,9 @@ if __name__ == "__main__":
     parser.add_argument('--no_sys_report', action='store_true',\
                         help = 'no time report provided by the system, per defualt, the wallclock will be taken from this report. If this option enabled, the wallclock will computed in a different way')                    
 
+    parser.add_argument('--no_x', action='store_false',\
+                        help = 'some model logs have a "set -x" in the first line, therefore the "Script run successfully:  OK" string is contained twice in the logfile. Passing this argument assumes NO "set -x" set.')                    
+
     args = parser.parse_args()
 
     # assume you are in teh directory where all experiment directories are
@@ -145,11 +148,17 @@ if __name__ == "__main__":
 
         return {"success": lo_success,  "iline" : list_iline, "line" : list_line}
     
-    def get_wallclock_icon(filename):
+    def get_wallclock_icon(filename,no_x):
+
+        if no_x:
+            required_ok_streams = 2
+        else:
+            required_ok_streams = 1
        
         OK_streams = grep('Script run successfully:  OK',filename)["line"]
+
    
-        if len(OK_streams) > 1 :
+        if len(OK_streams) >= required_ok_streams :
             time_grep = grep('CEST',filename)["line"]
             time_arr = [datetime.datetime.strptime(s.strip(), '%a %b %d %H:%M:%S CEST %Y') for s in time_grep]
 
@@ -247,8 +256,8 @@ if __name__ == "__main__":
                         print("Unknown host with hostname %s" %(hostname))
                         exit(-1)
    
-                    wallclock = get_wallclock_icon(filename)["wc"].total_seconds()
-                    date_run = get_wallclock_icon(filename)["st"]
+                    wallclock = get_wallclock_icon(filename,args.no_x)["wc"].total_seconds()
+                    date_run = get_wallclock_icon(filename,args.no_x)["st"]
                 else:
                     n_wc_st = get_wallclock_Nnodes_gen_daint(filename)
                     nnodes = n_wc_st["n"]
