@@ -63,13 +63,19 @@ if __name__ == "__main__":
                         help = 'factor to multiply for getting NH per year')
 
     parser.add_argument('--no_sys_report', action='store_true',\
-                        help = 'no time report provided by the system, per defualt, the wallclock will be taken from this report. If this option enabled, the wallclok will computed in a different way')                    
+                        help = 'no time report provided by the system, per default, the wallclock will be taken from this report. If this option enabled, the wallclock will computed in a different way')                    
+
+    parser.add_argument('--no_x', action='store_false',\
+                        help = 'some model logs have a "set -x" in the first line, therefore the "Script run successfully:  OK" string is contained twice in the logfile. Passing this argument assumes NO "set -x" set.')                    
 
     args = parser.parse_args()
 
     # assume you are in teh directory where all experiment directories are
     path_exps_dir = os.getcwd()
     path_out = path_exps_dir
+    
+    # hostname is needed when parsing the logfiles
+    hostname = os.uname()[1]
 
     # define files to analyse
     #----------------------------------------------------------------------
@@ -142,11 +148,17 @@ if __name__ == "__main__":
 
         return {"success": lo_success,  "iline" : list_iline, "line" : list_line}
     
-    def get_wallclock_icon(filename):
+    def get_wallclock_icon(filename,no_x):
+
+        if no_x:
+            required_ok_streams = 2
+        else:
+            required_ok_streams = 1
        
         OK_streams = grep('Script run successfully:  OK',filename)["line"]
+
    
-        if len(OK_streams) > 1 :
+        if len(OK_streams) >= required_ok_streams :
             time_grep = grep('CEST',filename)["line"]
             time_arr = [datetime.datetime.strptime(s.strip(), '%a %b %d %H:%M:%S CEST %Y') for s in time_grep]
 
@@ -228,11 +240,24 @@ if __name__ == "__main__":
 
                 # get # nodes and wallclock
                 if args.no_sys_report:
-                    nodes_line = grep("no_of_nodes=",filename)["line"][0]
-                    nnodes = int(nodes_line.split('=')[1].split()[0].strip())
+
+                    # Daint login nodes
+                    if 'daint' in hostname:
+                        nodes_line = grep("no_of_nodes=",filename)["line"][0]
+                        nnodes = int(nodes_line.split(' ')[1].split()[0].strip())
+
+                    # Euler login nodes
+                    elif 'eu-login' in hostname:
+                        nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",filename)["line"][0]
+                        nnodes=int(nodes_line.split(' ')[6])
+
+                    # unknown host
+                    else:
+                        print("Unknown host with hostname %s" %(hostname))
+                        exit(-1)
    
-                    wallclock = get_wallclock_icon(filename)["wc"].total_seconds()
-                    date_run = get_wallclock_icon(filename)["st"]
+                    wallclock = get_wallclock_icon(filename,args.no_x)["wc"].total_seconds()
+                    date_run = get_wallclock_icon(filename,args.no_x)["st"]
                 else:
                     n_wc_st = get_wallclock_Nnodes_gen_daint(filename)
                     nnodes = n_wc_st["n"]
