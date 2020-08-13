@@ -295,11 +295,11 @@ if __name__ == "__main__":
     # reference line time
     ref_time = perf_sorted.iloc[iref]
 
-    # compute speedup
-    perf_sorted['Speedup'] = ref_time.Wallclock/perf_sorted.Wallclock
+    # compute speedup normed with N_Nodes of ref_time
+    perf_sorted['Speedup'] = ref_time.Wallclock/perf_sorted.Wallclock * ref_time.N_Nodes
 
     # compute efficiency
-    perf_sorted['Efficiency'] = perf_sorted.Speedup * (ref_time.N_Nodes/perf_sorted.N_Nodes)*100.
+    perf_sorted['Efficiency'] = perf_sorted.Speedup * (1/perf_sorted.N_Nodes)*100.
 
     # compute number of node hours
     perf_sorted['Node_hours'] = perf_sorted.N_Nodes * perf_sorted.Wallclock * nodesec_to_nodehours
