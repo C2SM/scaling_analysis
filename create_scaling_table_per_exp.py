@@ -214,9 +214,9 @@ if __name__ == "__main__":
             wallclock = time_arr[-1] - time_arr[0] 
             
             # Nnodes
-            line_labels_n = [s.strip() for s in lines[summary_iline+4].split()]
+            line_labels_n = [s.strip() for s in lines[summary_iline+7].split()]
             ind_nodes = line_labels_n.index('NNodes')
-            nodes = int(lines[summary_iline+6].split()[ind_nodes])
+            nodes = int(lines[summary_iline+9].split()[ind_nodes])
 
             f.close()
         else:
