@@ -1,7 +1,9 @@
 Tool-set to perform scaling analysis of ICON(-HAM) , ECHAM(-HAM) and MPI-ESM(-HAM).
 
-It has been tested for the moment only on Piz daint (CSCS) to produce the technical p
+It has been tested on Piz daint (CSCS) to produce the technical p
 art of production projects at CSCS.
+On Euler (ETHZ) only limited functionality is provided for the analysis of Icon.
+See "limitations on Euler" for more information.
 
 Below is a description of each script and a recipe.
 
@@ -156,3 +158,14 @@ The script 'parse_craypat.py' produces a (very) short summary from the Craypat a
 
 This creates the file ./Craypat_table.csv which contains the variables asked by CSCS for the technical report for each experiment.
 Caution, for using this script, the module PyExtensions needs to be loaded.
+
+-----------------------------------------------------------------------------------------------
+Limitations on Euler
+-----------------------------------------------------------------------------------------------
+  * The scaling analysis tools were tested for Icon only.
+  * Because of differing nodes-architectures on Euler, the number of nodes passed via the -n option
+corresponds to the number of Euler-cores.
+  * Parsing the logfiles only works using the --no_sys_report option.
+  * In order to have nice plots, the number of Euler-cores needs to be divided by 12.
+  * Automatic runtime-specification is not as smooth as on Daint -> a minimum of 20 min is requested in any case.
+

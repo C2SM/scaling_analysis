@@ -63,7 +63,7 @@ if __name__ == "__main__":
                         help = 'factor to multiply for getting NH per year')
 
     parser.add_argument('--no_sys_report', action='store_true',\
-                        help = 'no time report provided by the system, per defualt, the wallclock will be taken from this report. If this option enabled, the wallclock will computed in a different way')                    
+                        help = 'no time report provided by the system, per default, the wallclock will be taken from this report. If this option enabled, the wallclock will computed in a different way')                    
 
     parser.add_argument('--no_x', action='store_false',\
                         help = 'some model logs have a "set -x" in the first line, therefore the "Script run successfully:  OK" string is contained twice in the logfile. Passing this argument assumes NO "set -x" set.')                    
