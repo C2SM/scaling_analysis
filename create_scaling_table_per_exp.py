@@ -159,8 +159,8 @@ if __name__ == "__main__":
 
    
         if len(OK_streams) >= required_ok_streams :
-            time_grep = grep('CEST',filename)["line"]
-            time_arr = [datetime.datetime.strptime(s.strip(), '%a %b %d %H:%M:%S CEST %Y') for s in time_grep]
+            time_grep = grep('CET',filename)["line"]
+            time_arr = [datetime.datetime.strptime(s.strip(), '%a %b %d %H:%M:%S CET %Y') for s in time_grep]
 
             wallclock = time_arr[-1] - time_arr[0] 
         else:
