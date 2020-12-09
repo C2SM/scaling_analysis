@@ -74,9 +74,6 @@ if __name__ == "__main__":
     path_exps_dir = os.getcwd()
     path_out = path_exps_dir
     
-    # hostname is needed when parsing the logfiles
-    hostname = os.uname()[1]
-
     # define files to analyse
     #----------------------------------------------------------------------
 
@@ -241,24 +238,19 @@ if __name__ == "__main__":
                 # get # nodes and wallclock
                 if args.no_sys_report:
 
-                    # Daint login nodes
-                    if 'daint' in hostname:
-                        nodes_line = grep("no_of_nodes=",filename)["line"][0]
-                        nnodes = int(nodes_line.split(' ')[1].split()[0].strip())
+                    # infer nnodes from MPI-procs in ICON output
+                    nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",filename)["line"][0]
+                    nnodes=int(nodes_line.split(' ')[6])
 
-                    # Euler login nodes
-                    elif 'eu-login' in hostname:
-                        nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",filename)["line"][0]
-                        nnodes=int(nodes_line.split(' ')[6])
+                    nnodes = nnodes // args.cpu_per_node
+                    print(nnodes)
 
-                    # unknown host
-                    else:
-                        print("Unknown host with hostname %s" %(hostname))
-                        exit(-1)
-   
                     wallclock = get_wallclock_icon(filename,args.no_x)["wc"].total_seconds()
                     date_run = get_wallclock_icon(filename,args.no_x)["st"]
                 else:
+                    print("This option is no available at the moment")
+                    print("See issue #2 on GitHub")
+                    exit()
                     n_wc_st = get_wallclock_Nnodes_gen_daint(filename)
                     nnodes = n_wc_st["n"]
                     wallclock = n_wc_st["wc"].total_seconds()
