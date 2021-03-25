@@ -28,7 +28,7 @@ def create_runscript(exp_base,output_postfix,nnodes):
     #return name of exp
     return(exp_nnodes)
 
-def define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes):
+def define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes,euler_node):
 
 
     # Daint login nodes
@@ -37,7 +37,13 @@ def define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes):
 
     # Euler login nodes
     elif 'eu-login' in hostname:
-        submit_job = 'bsub -W %s -n %s < %s' %(wallclocktime,nnodes,path_to_newscript)
+        if euler_node == 6:
+            submit_job = 'bsub -W %s -n %s -R "select[model==EPYC_7742]" < %s' %(wallclocktime,nnodes,path_to_newscript)
+        elif euler_node == 4:
+            submit_job = 'bsub -W %s -n %s -R "select[model==XeonGold_6150]" < %s' %(wallclocktime,nnodes,path_to_newscript)
+        else:
+            print('Error: Please specify a correct Euler node (4 or 6).')
+            exit(-1)
     
 
     print(submit_job)
@@ -75,6 +81,10 @@ if __name__ == "__main__":
                             default = 24,\
                             type = int,\
                             help = 'estimation of one node hour (wallclock time in hour when running on 1 node). This will be used for estimating a wallclock to use. In case -w is set, oneNH is not used.')
+    parser.add_argument('--euler-node','-m', dest = 'euler_node' ,\
+                            default = 6,\
+                            type = int,\
+                            help = 'node type for Euler simulations')    
 
     args = parser.parse_args()
 
@@ -95,6 +105,9 @@ if __name__ == "__main__":
 
     # base experiment
     exp_base = args.exp_base
+
+    # Euler node
+    euler_node = args.euler_node
 
     if len(args.nodes_to_proceed) == 0 :
         args.nodes_to_proceed = np.arange(args.arrange_nnodes[0],args.arrange_nnodes[1],args.arrange_nnodes[2])
@@ -147,4 +160,4 @@ if __name__ == "__main__":
                 
 
         # submit machine-dependent job
-        define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes)
+        define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes,euler_node)
