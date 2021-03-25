@@ -1,6 +1,6 @@
-# Tool-set to perform scaling analysis of ICON(-HAM), ECHAM(-HAM) and MPI-ESM(-HAM).
+# Tool-set to perform scaling analysis of ICON(-HAM), ECHAM(-HAM) and MPI-ESM(-HAM)
 
-It has been tested on Piz daint (CSCS) to produce the technical part of production projects at CSCS.
+It has been tested on Piz Daint (CSCS) to produce the technical part of production projects at CSCS.
 On Euler (ETHZ) only limited functionality is provided for the analysis of Icon.
 See [Limitations on Euler](#limitations-on-euler) for more information.
 
