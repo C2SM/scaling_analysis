@@ -1,4 +1,4 @@
-# Tool-set to perform scaling analysis of ICON(-HAM) , ECHAM(-HAM) and MPI-ESM(-HAM).
+# Tool-set to perform scaling analysis of ICON(-HAM), ECHAM(-HAM) and MPI-ESM(-HAM).
 
 It has been tested on Piz daint (CSCS) to produce the technical part of production projects at CSCS.
 On Euler (ETHZ) only limited functionality is provided for the analysis of Icon.
@@ -6,12 +6,12 @@ See [Limitations on Euler](#limitations-on-euler) for more information.
 
 Below is a description of each script and a recipe.
 
-*C. Siegenthaler 2020-01*
+*C. Siegenthaler 2020-01*  
 *M. Jähn 2021-03*
 
 ## Recipe for scaling analysis with ECHAM/ICON-(HAM)
 
-1) Configure and Compile your model as usual.
+1) Configure and compile your model as usual.
 
 2) Prepare your running script
 
@@ -36,7 +36,7 @@ Below is a description of each script and a recipe.
     **ICON**
     
     Use send_several_run_ncpus_perf_ICON.py.
-    For example for running "my_exp" on 1, 10,12 and 16 nodes:
+    For example for running "my_exp" on 1, 10, 12 and 16 nodes:
     
     ```$ python [path_to_scaling_analysis_tool]/send_several_run_ncpus_perf_ICON.py -e my_exp -n 1 10 12 15```
 
@@ -57,7 +57,7 @@ Below is a description of each script and a recipe.
     
     ```$ python [path_to_scaling_analysis_tool]/send_several_run_ncpus_perf.py -b [path_to_echam-ham_folder]/my_experiments/my_exp -n 1 10 12 15```
 
-    With the command above, 4 running folder will be created based on the running folder my_exp (my_exp_cpus12, my_exp_cpus120, my_exp_cpus144and my_exp_cpus180), and each of them will be launched.
+    With the command above, 4 running folders will be created based on the running folder my_exp (my_exp_cpus12, my_exp_cpus120, my_exp_cpus144and my_exp_cpus180), and each of them will be launched.
 
 4) When all the runs are finished, read all the slurm/log files to get the Wallclock for each run, and put them in a table:
 
@@ -80,11 +80,11 @@ Below is a description of each script and a recipe.
     For both model types, this creates a table my_exp.csv which contains the wallclock, efficiency and NH for each run.
     Caution, for using this script, the module PyExtensions needs to be loaded.
 
-5) Create a summary plot and table of the variable you wish (Efficiency, NH, Wallclock) for different experiments with respect to number of node.
+5) Create a summary plot and table of the variable you wish (Efficiency, NH, Wallclock) for different experiments with respect to the number of nodes.
 
     If needed you can define the line properties of each experiment in def_exps_plot.py.
     
-    ```$ plot_perfs.py```
+    ```$ python [path_to_scaling_analysis_tool]/plot_perfs.py```
 
 ## Recipe for use of Craypat analysis tool with ICON-(HAM)
 
@@ -115,9 +115,7 @@ Below is a description of each script and a recipe.
 3) Construct and launch the script of your experiment as usual
     The Craypat analysis tool creates a folder in the running directory called [model_used]+[some_numbers], for example echam6+6303-2417s, mpiom.x+6303-2417s, icon+1226-3277s.
     
-    ```
-    $ ./make_runscripts my_exp
-    ```
+    ```$ ./make_runscripts my_exp```
     
     Adjust the number of nodes if needed in my_exp.run
     
