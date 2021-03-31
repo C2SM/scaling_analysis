@@ -16,7 +16,7 @@ import numpy as np
 import def_exps_plot as defexp
 
 # path to the .csv files
-path = '/Users/colombsi/Documents/CSCS/perfs/2020_icon260/'
+path = os.getcwd()
 
 # files to include
 
@@ -101,7 +101,7 @@ for var_to_plot in variables :
             dt['Wallclock'] = dt['Wallclock']/60.
 
         # plot
-        dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax,label=exp.label, title='ICON-2.6.0.0, {}'.format(var_to_plot), **exp.line_appareance)
+        dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax,label=exp.label, title='ICON-2.6.2.0, {}'.format(var_to_plot), **exp.line_appareance)
 
         # highlight the chosen config (only for efficiency)
         if var_to_plot == 'Efficiency' and lo_best_conf :
