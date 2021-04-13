@@ -248,7 +248,6 @@ if __name__ == "__main__":
                     nnodes=int(nodes_line.split(' ')[6])
 
                     nnodes = nnodes // args.cpu_per_node
-                    print(nnodes)
 
                     wallclock = get_wallclock_icon(filename,args.no_x)["wc"].total_seconds()
                     date_run = get_wallclock_icon(filename,args.no_x)["st"]
