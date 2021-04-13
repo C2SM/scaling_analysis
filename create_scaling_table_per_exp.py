@@ -156,8 +156,13 @@ if __name__ == "__main__":
 
    
         if len(OK_streams) >= required_ok_streams :
-            time_grep = grep('CET',filename)["line"]
-            time_arr = [datetime.datetime.strptime(s.strip(), '%a %b %d %H:%M:%S CET %Y') for s in time_grep]
+            timezone = 'CEST'
+            time_grep = grep(timezone,filename)["line"]
+            if not time_grep:
+                timezone = 'CET'
+                time_grep = grep(timezone,filename)["line"]
+
+            time_arr = [datetime.datetime.strptime(s.strip(), '%a %b %d %H:%M:%S ' + timezone + ' %Y') for s in time_grep]
 
             wallclock = time_arr[-1] - time_arr[0] 
         else:
@@ -248,8 +253,8 @@ if __name__ == "__main__":
                     wallclock = get_wallclock_icon(filename,args.no_x)["wc"].total_seconds()
                     date_run = get_wallclock_icon(filename,args.no_x)["st"]
                 else:
-                    print("This option is no available at the moment")
-                    print("See issue #2 on GitHub")
+                    print("This option is not available at the moment.")
+                    print("Consider using the --no_sys_report option.")
                     exit()
                     n_wc_st = get_wallclock_Nnodes_gen_daint(filename)
                     nnodes = n_wc_st["n"]
