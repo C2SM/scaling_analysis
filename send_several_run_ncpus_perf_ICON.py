@@ -28,12 +28,15 @@ def create_runscript(exp_base,output_postfix,nnodes):
     #return name of exp
     return(exp_nnodes)
 
-def define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes,euler_node):
+def define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes,euler_node,account):
 
 
     # Daint login nodes
     if 'daint' in hostname:
-        submit_job = 'sbatch --time=%s %s' %(wallclocktime,path_to_newscript)
+        if account == None:
+            # Use standard account
+            account = os.popen('id -gn').read().split('\n')[0]
+        submit_job = 'sbatch --time=%s --account=%s %s' %(wallclocktime,account,path_to_newscript)
 
     # Euler login nodes
     elif 'eu-login' in hostname:
@@ -85,6 +88,10 @@ if __name__ == "__main__":
                             default = 6,\
                             type = int,\
                             help = 'node type for Euler simulations')    
+    parser.add_argument('--account','-A', dest = 'account' ,\
+                            default = None,\
+                            type = str,\
+                            help = 'project account on Piz Daint')    
 
     args = parser.parse_args()
 
@@ -109,6 +116,9 @@ if __name__ == "__main__":
     # Euler node
     euler_node = args.euler_node
 
+    # account
+    account = args.account
+
     if len(args.nodes_to_proceed) == 0 :
         args.nodes_to_proceed = np.arange(args.arrange_nnodes[0],args.arrange_nnodes[1],args.arrange_nnodes[2])
     
@@ -121,7 +131,7 @@ if __name__ == "__main__":
         print ("Exiting")
         exit(-1)    
 
-    #define run dir
+    # define run dir
     path_run_dir = os.path.join(args.basis_folder,"run")
 
     # estimated time for one node
@@ -160,4 +170,6 @@ if __name__ == "__main__":
                 
 
         # submit machine-dependent job
-        define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes,euler_node)
+        define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes,euler_node,account)
+
+

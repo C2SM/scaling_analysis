@@ -74,9 +74,6 @@ if __name__ == "__main__":
     path_exps_dir = os.getcwd()
     path_out = path_exps_dir
     
-    # hostname is needed when parsing the logfiles
-    hostname = os.uname()[1]
-
     # define files to analyse
     #----------------------------------------------------------------------
 
@@ -159,8 +156,13 @@ if __name__ == "__main__":
 
    
         if len(OK_streams) >= required_ok_streams :
-            time_grep = grep('CET',filename)["line"]
-            time_arr = [datetime.datetime.strptime(s.strip(), '%a %b %d %H:%M:%S CET %Y') for s in time_grep]
+            timezone = 'CEST'
+            time_grep = grep(timezone,filename)["line"]
+            if not time_grep:
+                timezone = 'CET'
+                time_grep = grep(timezone,filename)["line"]
+
+            time_arr = [datetime.datetime.strptime(s.strip(), '%a %b %d %H:%M:%S ' + timezone + ' %Y') for s in time_grep]
 
             wallclock = time_arr[-1] - time_arr[0] 
         else:
@@ -241,24 +243,18 @@ if __name__ == "__main__":
                 # get # nodes and wallclock
                 if args.no_sys_report:
 
-                    # Daint login nodes
-                    if 'daint' in hostname:
-                        nodes_line = grep("no_of_nodes=",filename)["line"][0]
-                        nnodes = int(nodes_line.split(' ')[1].split()[0].strip())
+                    # infer nnodes from MPI-procs in ICON output
+                    nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",filename)["line"][0]
+                    nnodes=int(nodes_line.split(' ')[6])
 
-                    # Euler login nodes
-                    elif 'eu-login' in hostname:
-                        nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",filename)["line"][0]
-                        nnodes=int(nodes_line.split(' ')[6])
+                    nnodes = nnodes // args.cpu_per_node
 
-                    # unknown host
-                    else:
-                        print("Unknown host with hostname %s" %(hostname))
-                        exit(-1)
-   
                     wallclock = get_wallclock_icon(filename,args.no_x)["wc"].total_seconds()
                     date_run = get_wallclock_icon(filename,args.no_x)["st"]
                 else:
+                    print("This option is not available at the moment.")
+                    print("Consider using the --no_sys_report option.")
+                    exit()
                     n_wc_st = get_wallclock_Nnodes_gen_daint(filename)
                     nnodes = n_wc_st["n"]
                     wallclock = n_wc_st["wc"].total_seconds()
