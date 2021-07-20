@@ -21,9 +21,7 @@ path = os.getcwd()
 # files to include
 
 # all ICONs, all compils
-files_to_read = [defexp.icon_amip_cray,defexp.icon_amip_1m_cray,defexp.icon_amip_6h_cray,
-                 defexp.icon_amip_pgi,defexp.icon_amip_1m_pgi,defexp.icon_amip_6h_pgi,
-                 defexp.icon_amip_intel,defexp.icon_amip_1m_intel,defexp.icon_amip_6h_intel,
+files_to_read = [defexp.icon_amip_gcc_O1,defexp.icon_amip_gcc_O2,defexp.icon_amip_gcc_O3,
                  ]
 
 # all files in folder
@@ -31,7 +29,8 @@ files_to_read = [defexp.icon_amip_cray,defexp.icon_amip_1m_cray,defexp.icon_amip
 
 variables = ['Efficiency','Wallclock','Speedup','NH_year']
 #variables = ['Wallclock']
-name_plot = 'ICON-AMIP-allcomp'
+name_plot = 'ICON-AMIP_Scaling_Analysis'
+xlabel = '# Cores'
 
 lo_wc_min = True       # transform Wallclock in minutes
 lo_write_csv = True    # write csv file of data in the plot
@@ -101,7 +100,7 @@ for var_to_plot in variables :
             dt['Wallclock'] = dt['Wallclock']/60.
 
         # plot
-        dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax,label=exp.label, title='ICON-2.6.2.0, {}'.format(var_to_plot), **exp.line_appareance)
+        dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax,label=exp.label, title='ICON-2.6.3, {}'.format(var_to_plot), **exp.line_appareance)
 
         # highlight the chosen config (only for efficiency)
         if var_to_plot == 'Efficiency' and lo_best_conf :
@@ -133,7 +132,7 @@ for var_to_plot in variables :
         max_N = max(out_df.N_Nodes)
     ax.set_xlim([min_N,max_N])
     ax.set_xticks(np.arange(min_N, max_N, step=5),minor=True)
-    ax.set_xlabel('# Nodes')
+    ax.set_xlabel(xlabel)
     if lo_zoom_wc:
         ax.set_ylim([0,7])
 
