@@ -68,6 +68,9 @@ if __name__ == "__main__":
     parser.add_argument('--no_x', action='store_false',\
                         help = 'some model logs have a "set -x" in the first line, therefore the "Script run successfully:  OK" string is contained twice in the logfile. Passing this argument assumes NO "set -x" set.')                    
 
+    parser.add_argument('--ignore_errors', action='store_true',\
+                        help = 'ignores errors in the logfile. This is useful whenever the run finishes normally, but hangs at cleanup.')                    
+
     args = parser.parse_args()
 
     # assume you are in teh directory where all experiment directories are
@@ -195,8 +198,7 @@ if __name__ == "__main__":
 
         return(wallclock,nnodes,date_run)
 
-    def get_wallclock_Nnodes_gen_daint(filename, string_sys_report="Elapsed"):
-
+    def get_wallclock_Nnodes_gen_daint(filename, string_sys_report="Elapsed", use_timer_report=False):
         # Find report
         summary_in_file = grep(string_sys_report, filename)
         if summary_in_file['success']:
@@ -206,14 +208,30 @@ if __name__ == "__main__":
             f = open(filename)
             lines =f.readlines()
 
-            #find index of "start" and "end" in the report line 
             line_labels = [s.strip() for s in summary_line.split()]
             ind_start = line_labels.index('Start')
             ind_end = line_labels.index('End')
             
             line_time = [lines[summary_iline+2].split()[i] for i in [ind_start,ind_end]]
             time_arr = [datetime.datetime.strptime(s.strip(), '%Y-%m-%dT%H:%M:%S') for s in line_time]
-            wallclock = time_arr[-1] - time_arr[0] 
+
+            if use_timer_report:
+                string_timer_report = 'name                              # calls'
+                timer_in_file = grep(string_timer_report, filename)
+                if timer_in_file['success']:
+                    timer_line = timer_in_file["line"][0]
+                    timer_iline = timer_in_file["iline"][0]
+                    string_timer_firstrow = 'total       '
+                    first_row = grep(string_timer_firstrow, filename)
+                    first_row_line = first_row["line"][0]
+                    first_row_iline = first_row["iline"][0]
+                    time_str = lines[first_row_iline].split()[-1]
+                    wallclock = datetime.timedelta(seconds=float(time_str))
+                else:
+                    wallclock, nnodes, time_arr = set_default_error_slurm_file("Warning : Timer output report is not present or the word {} is not found".format(filename, string_timer_report))
+            else:
+                # find index of "start" and "end" in the report line 
+                wallclock = time_arr[-1] - time_arr[0] 
             
             # Nnodes
             line_labels_n = [s.strip() for s in lines[summary_iline+7].split()]
@@ -238,11 +256,9 @@ if __name__ == "__main__":
         print("Read file : {}".format(os.path.basename(filename)))
         # read nnodes and wallclock from file
         if args.mod.upper() == "ICON" :
-            if check_icon_finished(filename):
-
+            if check_icon_finished(filename) or args.ignore_errors:
                 # get # nodes and wallclock
                 if args.no_sys_report:
-
                     # infer nnodes from MPI-procs in ICON output
                     nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",filename)["line"][0]
                     nnodes=int(nodes_line.split(' ')[6])
@@ -252,15 +268,12 @@ if __name__ == "__main__":
                     wallclock = get_wallclock_icon(filename,args.no_x)["wc"].total_seconds()
                     date_run = get_wallclock_icon(filename,args.no_x)["st"]
                 else:
-                    print("This option is not available at the moment.")
-                    print("Consider using the --no_sys_report option.")
-                    exit()
-                    n_wc_st = get_wallclock_Nnodes_gen_daint(filename)
+                    n_wc_st = get_wallclock_Nnodes_gen_daint(filename,use_timer_report=True)
                     nnodes = n_wc_st["n"]
                     wallclock = n_wc_st["wc"].total_seconds()
                     date_run = n_wc_st["st"]
             else:
-                wallclock, nnodes, date_run = set_default_error_slurm_file("Warning : Run did not finished properly")
+                wallclock, nnodes, date_run = set_default_error_slurm_file("Warning : Run did not finish properly")
 
             # get job number
             jobnumber = float(filename.split('.')[-2])
