@@ -35,7 +35,7 @@ name_plot = 'ICON-AMIP-' + machine.upper()  + '-' + version
 title = 'ICON ' + version
 if machine == 'euler':
     xlabel = '# Cores'
-elif:
+else:
     xlabel = '# Nodes'
 
 lo_wc_min = True       # transform Wallclock in minutes
