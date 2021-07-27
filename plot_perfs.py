@@ -21,9 +21,17 @@ path = os.getcwd()
 # files to include
 
 # all ICONs, all compils
-files_to_read = [defexp.atm_amip_gcc_O1,defexp.atm_amip_gcc_O2,defexp.atm_amip_gcc_O3,
-                 defexp.atm_amip_pgi_O1,defexp.atm_amip_pgi_O2,defexp.atm_amip_pgi_O3,
-                 ]
+files_to_read = [ 
+                  defexp.daint_atm_amip_gcc_O1,
+                  defexp.daint_atm_amip_gcc_O2,
+                  defexp.daint_atm_amip_gcc_O3,
+                  defexp.daint_atm_amip_pgi_O1,
+                  defexp.daint_atm_amip_pgi_O2,
+                  defexp.daint_atm_amip_pgi_O3,
+                # defexp.euler_atm_amip_gcc_O1,
+                # defexp.euler_atm_amip_gcc_O2,
+                # defexp.euler_atm_amip_gcc_O3,
+                ]
 
 # all files in folder
 #files_to_read = []
