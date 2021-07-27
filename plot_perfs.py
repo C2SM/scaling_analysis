@@ -30,9 +30,13 @@ files_to_read = [defexp.atm_amip_gcc_O1,defexp.atm_amip_gcc_O2,defexp.atm_amip_g
 
 variables = ['Efficiency','Wallclock','Speedup','NH_year']
 version = '2.6.3.0'
-name_plot = 'ICON-AMIP-DAINT-' + version
+machine = 'euler' # daint
+name_plot = 'ICON-AMIP-' + machine.upper()  + '-' + version
 title = 'ICON ' + version
-xlabel = '# Nodes'
+if machine == 'euler':
+    xlabel = '# Cores'
+elif:
+    xlabel = '# Nodes'
 
 lo_wc_min = True       # transform Wallclock in minutes
 lo_write_csv = True    # write csv file of data in the plot
