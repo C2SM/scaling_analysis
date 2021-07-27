@@ -22,15 +22,16 @@ path = os.getcwd()
 
 # all ICONs, all compils
 files_to_read = [defexp.atm_amip_gcc_O1,defexp.atm_amip_gcc_O2,defexp.atm_amip_gcc_O3,
-                 defexp.atm_amip_pgi_O1,defexp.atm_amip_pgi_O2,
+                 defexp.atm_amip_pgi_O1,defexp.atm_amip_pgi_O2,defexp.atm_amip_pgi_O3,
                  ]
 
 # all files in folder
 #files_to_read = []
 
 variables = ['Efficiency','Wallclock','Speedup','NH_year']
-#variables = ['Wallclock']
-name_plot = 'ICON-AMIP_Scaling_Analysis_Daint'
+version = '2.6.3.0'
+name_plot = 'ICON-AMIP-DAINT-' + version
+title = 'ICON ' + version
 xlabel = '# Nodes'
 
 lo_wc_min = True       # transform Wallclock in minutes
@@ -101,7 +102,7 @@ for var_to_plot in variables :
             dt['Wallclock'] = dt['Wallclock']/60.
 
         # plot
-        dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax,label=exp.label, title='ICON-2.6.3, {}'.format(var_to_plot), **exp.line_appareance)
+        dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax,label=exp.label, title=title+', '+var_to_plot, **exp.line_appareance)
 
         # highlight the chosen config (only for efficiency)
         if var_to_plot == 'Efficiency' and lo_best_conf :
@@ -143,7 +144,7 @@ for var_to_plot in variables :
         ax.axhline(y=70,color='k')
 
     if var_to_plot == 'Speedup':
-        ax.plot([0,max_N],[0,max_N])
+        ax.plot([0,max_N],[0,max_N], color='black')
         ax.set_ylim([0,max_N])
     #ax.set_ylim([10,45])
 
