@@ -15,36 +15,38 @@ import numpy as np
 
 import def_exps_plot as defexp
 
-# path to the .csv files
+# Path to the .csv files
 path = os.getcwd()
 
-# files to include
-
-# all ICONs, all compils
-files_to_read = [ 
-                  defexp.daint_atm_amip_gcc_O1,
-                  defexp.daint_atm_amip_gcc_O2,
-                  defexp.daint_atm_amip_gcc_O3,
-                  defexp.daint_atm_amip_pgi_O1,
-                  defexp.daint_atm_amip_pgi_O2,
-                  defexp.daint_atm_amip_pgi_O3,
-                # defexp.euler_atm_amip_gcc_O1,
-                # defexp.euler_atm_amip_gcc_O2,
-                # defexp.euler_atm_amip_gcc_O3,
-                ]
-
-# all files in folder
-#files_to_read = []
-
-variables = ['Efficiency','Wallclock','Speedup','NH_year']
+# Settings
+machine = 'euler6' # daint
 version = '2.6.3.0'
-machine = 'euler' # daint
+variables = ['Efficiency', 'Wallclock', 'Speedup', 'NH_year']
+
 name_plot = 'ICON-AMIP-' + machine.upper()  + '-' + version
-title = 'ICON ' + version
-if machine == 'euler':
+title = 'ICON ' + version + ' @' + machine.upper()
+
+if machine.startswith('euler'):
     xlabel = '# Cores'
-else:
+    files_to_read = [ 
+                      defexp.euler_atm_amip_gcc_O1,
+                      defexp.euler_atm_amip_gcc_O2,
+                      defexp.euler_atm_amip_gcc_O3,
+                    ]
+elif machine.startswith('daint'):
     xlabel = '# Nodes'
+    files_to_read = [ 
+                      defexp.daint_atm_amip_gcc_O1,
+                      defexp.daint_atm_amip_gcc_O2,
+                      defexp.daint_atm_amip_gcc_O3,
+                      defexp.daint_atm_amip_pgi_O1,
+                      defexp.daint_atm_amip_pgi_O2,
+                      defexp.daint_atm_amip_pgi_O3,
+                    ]
+else:
+    print("Please specify a correct machine name (daint or euler)")
+    print("Exiting")
+    exit()
 
 lo_wc_min = True       # transform Wallclock in minutes
 lo_write_csv = True    # write csv file of data in the plot
@@ -55,6 +57,7 @@ lo_zoom_wc = False
 # x-axis lim
 min_N = None
 max_N = None
+
 #----------------------Begin of script-----------------------------------------------------------
 
 # list of exp to plot not given, take all csv files in the folder 'path'
