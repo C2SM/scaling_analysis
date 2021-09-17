@@ -198,6 +198,34 @@ if __name__ == "__main__":
 
         return(wallclock,nnodes,date_run)
 
+    def get_date_from_echam_slurm_file(filename):
+        string_timer_report = 'Submit            Eligible'
+        summary_in_file = grep(string_timer_report, filename)
+        if summary_in_file['success']:
+            summary_line = summary_in_file["line"][0]
+            summary_iline = summary_in_file["iline"][0]
+            f = open(filename)
+            lines =f.readlines()
+
+            line_labels = [s.strip() for s in summary_line.split()]
+            ind_start = line_labels.index('Start')
+            ind_end = line_labels.index('End')
+            
+            line_time = [lines[summary_iline+2].split()[i] for i in [ind_start,ind_end]]
+            first_row = grep(string_timer_report, filename)
+            first_row_line = first_row["line"][0]
+            first_row_iline = first_row["iline"][0]
+            ind_start = line_labels.index('Start')
+            ind_end = line_labels.index('End')
+            line_time = [lines[first_row_iline+2].split()[i] for i in [ind_start,ind_end]]
+            time_arr = [datetime.datetime.strptime(s.strip(), '%Y-%m-%dT%H:%M:%S') for s in line_time]
+            date_run = time_arr[0]
+        else:
+            print("Warning: Cannot get date from slurm file %s" % filename)
+            date_run = default_wallclock['date_run']
+
+        return date_run
+
     def get_wallclock_Nnodes_gen_daint(filename, string_sys_report="Elapsed", use_timer_report=False):
         # Find report
         summary_in_file = grep(string_sys_report, filename)
@@ -286,10 +314,9 @@ if __name__ == "__main__":
             wallclock_line = grep("Wallclock",filename)["line"][0]
             wallclock = float(wallclock_line.split(':')[1].strip()[:-1])
 
-            # to do: get date of teh run from slurm file 
-            date_run = datetime.datetime(1900,1,1) 
+            date_run = get_date_from_echam_slurm_file(filename)
 
-            jobnumber = float (filename.replace('_','.').split('.')[-2])
+            jobnumber = float(filename.replace('_','.').split('.')[-2])
 
         # fill array in
         np_2print.append([nnodes,wallclock,jobnumber,date_run])
