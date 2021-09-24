@@ -150,10 +150,7 @@ if __name__ == "__main__":
     
     def get_wallclock_icon(filename,no_x):
 
-        if no_x:
-            required_ok_streams = 2
-        else:
-            required_ok_streams = 1
+        required_ok_streams = 1
        
         OK_streams = grep('Script run successfully:  OK',filename)["line"]
 

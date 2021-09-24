@@ -4,7 +4,8 @@
 # Merge all .csv files (one per exp) into one big file containing all exps
 # By defauylt, all the csv files present in 'path' are used. The definition if the plotting properties of each experiment is in defined in 'def_exps_plot.py'.
  
-# Colombe Siegenthaler    C2SM (ETHZ) , 09.2108
+# Colombe Siegenthaler    C2SM (ETHZ) , 09.2018
+# Michael Jähn            C2SM (ETHZ) , 09.2021
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages  # tiple pages in pdf
@@ -13,38 +14,60 @@ import os
 import glob
 import numpy as np
 
-import def_exps_plot as defexp
+#import def_exps_plot as defexp
+import def_exps_plot_2021 as defexp
 
 # Path to the .csv files
 path = os.getcwd()
 
 # Settings
-machine = 'euler6' # daint
-version = '2.6.3.0'
-variables = ['Efficiency', 'Wallclock', 'Speedup', 'NH_year']
+settings = 'benchmark_2021' # 'icon_2.6.3.0'
 
-name_plot = 'ICON-AMIP-' + machine.upper()  + '-' + version
-title = 'ICON ' + version + ' @' + machine.upper()
+if settings == 'icon_2.6.3.0':
+    machine = 'euler6' # daint
+    version = '2.6.3.0'
+    variables = ['Efficiency', 'Wallclock', 'Speedup', 'NH_year']
 
-if machine.startswith('euler'):
-    xlabel = '# Cores'
-    files_to_read = [ 
-                      defexp.euler_atm_amip_gcc_O1,
-                      defexp.euler_atm_amip_gcc_O2,
-                      defexp.euler_atm_amip_gcc_O3,
-                    ]
-elif machine.startswith('daint'):
+    name_plot = 'ICON-AMIP-' + machine.upper()  + '-' + version
+    title = 'ICON ' + version + ' @' + machine.upper()
+
+    if machine.startswith('euler'):
+        xlabel = '# Cores'
+        files_to_read = [ 
+                          defexp.euler_atm_amip_gcc_O1,
+                          defexp.euler_atm_amip_gcc_O2,
+                          defexp.euler_atm_amip_gcc_O3,
+                        ]
+    elif machine.startswith('daint'):
+        xlabel = '# Nodes'
+        files_to_read = [ 
+                          defexp.daint_atm_amip_gcc_O1,
+                          defexp.daint_atm_amip_gcc_O2,
+                          defexp.daint_atm_amip_gcc_O3,
+                          defexp.daint_atm_amip_pgi_O1,
+                          defexp.daint_atm_amip_pgi_O2,
+                          defexp.daint_atm_amip_pgi_O3,
+                        ]
+    else:
+        print("Please specify a correct machine name (daint or euler)")
+        print("Exiting")
+        exit()
+
+elif settings == 'benchmark_2021':
+    variables = ['Efficiency', 'Wallclock', 'Speedup', 'NH_year']
+
+    name_plot = 'scaling_plot'
+    title = 'Scaling Plot'
+
     xlabel = '# Nodes'
-    files_to_read = [ 
-                      defexp.daint_atm_amip_gcc_O1,
-                      defexp.daint_atm_amip_gcc_O2,
-                      defexp.daint_atm_amip_gcc_O3,
-                      defexp.daint_atm_amip_pgi_O1,
-                      defexp.daint_atm_amip_pgi_O2,
-                      defexp.daint_atm_amip_pgi_O3,
+    files_to_read = [
+                      defexp.echam_ham_amip_T63L47,
+                      defexp.icon_cpu_gcc_amip,
+                      defexp.icon_cpu_pgi_amip,
                     ]
+
 else:
-    print("Please specify a correct machine name (daint or euler)")
+    print("Please specify a correct setting")
     print("Exiting")
     exit()
 
