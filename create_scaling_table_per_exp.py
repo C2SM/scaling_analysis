@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--mod','-m', dest = 'mod',\
                             default='echam-ham',\
-                            help='model type (echam-ham, icon)') 
+                            help='model type (echam-ham, icon, icon-ham)') 
 
     parser.add_argument('--cpu_per_node', dest = 'cpu_per_node',\
                         default = 12,\
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         l_cpus_def = True
     
     if l_cpus_def:
-        if args.mod.upper() == "ICON" :
+        if args.mod.upper().startswith("ICON"):
             slurm_files_ar = [glob.glob("{}/LOG.exp.{}_nnodes{}.run.*".format(path_exps_dir,args.basis_name,n)) for n in nodes_to_proceed]
             slurm_files = list(itertools.chain.from_iterable(slurm_files_ar))
         elif args.mod.upper() == "ECHAM-HAM":
@@ -103,7 +103,7 @@ if __name__ == "__main__":
                               
     # 3rd possibility : use all the slurm files containing the basis name
     if (not l_cpus_def):
-        if args.mod.upper() == "ICON" :
+        if args.mod.upper().startswith("ICON"):
             slurm_files = glob.glob("{}/LOG.exp.{}*.run.*".format(path_exps_dir,args.basis_name,args.basis_name))
         elif args.mod.upper() == "ECHAM-HAM":
             slurm_files = glob.glob("{}/{}*/slurm_{}*".format(path_exps_dir,args.basis_name,args.basis_name))
@@ -148,12 +148,10 @@ if __name__ == "__main__":
 
         return {"success": lo_success,  "iline" : list_iline, "line" : list_line}
     
-    def get_wallclock_icon(filename,no_x):
+    def get_wallclock_icon(filename, no_x, num_ok=1):
 
-        required_ok_streams = 1
-       
+        required_ok_streams = num_ok
         OK_streams = grep('Script run successfully:  OK',filename)["line"]
-
    
         if len(OK_streams) >= required_ok_streams :
             timezone = 'CEST'
@@ -162,7 +160,8 @@ if __name__ == "__main__":
                 timezone = 'CET'
                 time_grep = grep(timezone,filename)["line"]
 
-            time_arr = [datetime.datetime.strptime(s.strip(), '%a %b %d %H:%M:%S ' + timezone + ' %Y') for s in time_grep]
+            time_arr = [datetime.datetime.strptime(s.strip(),
+                        '%a %b %d %H:%M:%S ' + timezone + ' %Y') for s in time_grep]
 
             wallclock = time_arr[-1] - time_arr[0] 
         else:
@@ -280,7 +279,7 @@ if __name__ == "__main__":
 
         print("Read file : {}".format(os.path.basename(filename)))
         # read nnodes and wallclock from file
-        if args.mod.upper() == "ICON" :
+        if args.mod.upper() == "ICON":
             if check_icon_finished(filename) or args.ignore_errors:
                 # get # nodes and wallclock
                 if args.no_sys_report:
@@ -299,6 +298,25 @@ if __name__ == "__main__":
                     date_run = n_wc_st["st"]
             else:
                 wallclock, nnodes, date_run = set_default_error_slurm_file("Warning : Run did not finish properly")
+
+            # get job number
+            jobnumber = float(filename.split('.')[-2])
+        if args.mod.upper() == "ICON-HAM":
+            # get # nodes and wallclock
+            if args.no_sys_report:
+                # infer nnodes from MPI-procs in ICON output
+                nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",filename)["line"][0]
+                nnodes=int(nodes_line.split(' ')[6])
+
+                nnodes = nnodes // args.cpu_per_node
+
+                wallclock = get_wallclock_icon(filename,args.no_x,num_ok=0)["wc"].total_seconds()
+                date_run = get_wallclock_icon(filename,args.no_x,num_ok=0)["st"]
+            else:
+                n_wc_st = get_wallclock_Nnodes_gen_daint(filename,use_timer_report=True)
+                nnodes = n_wc_st["n"]
+                wallclock = n_wc_st["wc"].total_seconds()
+                date_run = n_wc_st["st"]
 
             # get job number
             jobnumber = float(filename.split('.')[-2])
