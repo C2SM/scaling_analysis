@@ -64,6 +64,7 @@ elif settings == 'benchmark_2021':
                       defexp.echam_ham_amip_T63L47,
                       defexp.icon_cpu_gcc_amip,
                       defexp.icon_cpu_pgi_amip,
+                      defexp.icon_ham_amip,
                     ]
 
 else:
