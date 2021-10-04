@@ -29,10 +29,13 @@ echam_ham_amip_T63L47 = experiment(name='ECHAM-HAM_amip_T63L47',
                                    marker='>', color='#fdcc8a', linestyle='-')
 icon_ham_amip = experiment(name='ICON-HAM_amip',
                                label='ICON-HAM 1M', bestconf=19,
-                               marker='o', color='#fc8d59', linestyle='-')
+                               marker='<', color='#fc8d59', linestyle='-')
 icon_cpu_gcc_amip = experiment(name='ICON_cpu_gcc_amip',
                                label='ICON (cpu, gcc) 1M', bestconf=43,
                                marker='x', color='#bdc9e1', linestyle='--')
 icon_cpu_pgi_amip = experiment(name='ICON_cpu_pgi_amip',
                                label='ICON (cpu, pgi) 1M', bestconf=42,
                                marker='x', color='#67a9cf', linestyle='-')
+icon_gpu_pgi_amip_rte = experiment(name='ICON_gpu_pgi_amip_rte',
+                               label='ICON (gpu) 1M', bestconf=4,
+                               marker='v', color='#02818a', linestyle='-')
