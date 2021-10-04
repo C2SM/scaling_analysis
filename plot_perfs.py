@@ -62,9 +62,10 @@ elif settings == 'benchmark_2021':
     xlabel = '# Nodes'
     files_to_read = [
                       defexp.echam_ham_amip_T63L47,
+                      defexp.icon_ham_amip,
                       defexp.icon_cpu_gcc_amip,
                       defexp.icon_cpu_pgi_amip,
-                      defexp.icon_ham_amip,
+                      defexp.icon_gpu_pgi_amip_rte,
                     ]
 
 else:
@@ -143,12 +144,21 @@ for var_to_plot in variables :
         # plot
         dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax,label=exp.label, title=title+', '+var_to_plot, **exp.line_appareance)
 
-        # highlight the chosen config (only for efficiency)
-        if var_to_plot == 'Efficiency' and lo_best_conf :
+        # highlight the chosen config 
+        #if var_to_plot == 'Efficiency' and lo_best_conf :
+        if lo_best_conf:
             best_n = exp.bestconf
             if best_n in dt.N_Nodes.values:
-                perf_chosen = float(dt[dt.N_Nodes == best_n].Efficiency)
-                ax.scatter(best_n, perf_chosen, s=80.,color='k')
+                if var_to_plot == 'Efficiency':
+                    perf_chosen = float(dt[dt.N_Nodes == best_n].Efficiency)
+                if var_to_plot == 'Wallclock':
+                    perf_chosen = float(dt[dt.N_Nodes == best_n].Wallclock)
+                if var_to_plot == 'Speedup':
+                    perf_chosen = float(dt[dt.N_Nodes == best_n].Speedup)
+                if var_to_plot == 'NH_year':
+                    perf_chosen = float(dt[dt.N_Nodes == best_n].NH_year)
+                ax.scatter(best_n, perf_chosen, s=120., alpha=0.7,
+                           color=exp.line_appareance['color'], edgecolor='k')
             else:
                 print ("Warning, the number of nodes defined for the best configuration ({}) is not in the experiment definition".format(best_n))
                 print ("The number of nodes in the csv files are: ")
