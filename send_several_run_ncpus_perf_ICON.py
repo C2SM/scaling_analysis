@@ -17,13 +17,15 @@ import os
 import argparse
 import datetime
 
-def create_runscript(exp_base,output_postfix,nnodes):
+def create_runscript(exp_base,output_postfix,nnodes,nproma=None):
     # name experiment
     exp_nnodes = "{}{}_nnodes{}".format(exp_base,output_postfix,nnodes)
 
     # create scripts
-    os.system("/bin/bash ./run/make_target_runscript in_folder=run in_script=exp.{} in_script=exec.iconrun out_script=exp.{}.run EXPNAME={} memory_model='large' omp_stacksize=200M grids_folder='/scratch/snx3000/colombsi/ICON_input/grids' no_of_nodes={}".format(exp_base,exp_nnodes,exp_nnodes,nnodes))
-
+    if nproma is None:
+        os.system("/bin/bash ./run/make_target_runscript in_folder=run in_script=exp.{} in_script=exec.iconrun out_script=exp.{}.run EXPNAME={} memory_model='large' omp_stacksize=200M grids_folder='/scratch/snx3000/colombsi/ICON_input/grids' no_of_nodes={}".format(exp_base,exp_nnodes,exp_nnodes,nnodes))
+    else:
+        os.system("/bin/bash ./run/make_target_runscript in_folder=run in_script=exp.{} in_script=exec.iconrun out_script=exp.{}.run EXPNAME={} memory_model='large' omp_stacksize=200M grids_folder='/scratch/snx3000/colombsi/ICON_input/grids' no_of_nodes={} nproma={}".format(exp_base,exp_nnodes,exp_nnodes,nnodes,nproma))
  
     #return name of exp
     return(exp_nnodes)
@@ -80,6 +82,10 @@ if __name__ == "__main__":
                             default = None,\
                             type = str,\
                             help = 'wallclock to use when sending the run to the batch system')    
+    parser.add_argument('--nproma','-p', dest = 'nproma' ,\
+                            default = None,\
+                            type = int,\
+                            help = 'value of nproma')    
     parser.add_argument('--oneNH','-NH', dest = 'oneNH' ,\
                             default = 24,\
                             type = int,\
@@ -137,6 +143,9 @@ if __name__ == "__main__":
     # estimated time for one node
     one_node_hour = args.oneNH
 
+    # nproma
+    nproma = args.nproma
+
     # loop over number of nodes to create scripts
     for nnodes in args.nodes_to_proceed:
 
@@ -145,7 +154,7 @@ if __name__ == "__main__":
 
 	# create the runscripts with the icon script creating tool 
         print ("Create runscript")
-        new_script = create_runscript(exp_base,args.output_postfix,nnodes)
+        new_script = create_runscript(exp_base,args.output_postfix,nnodes,nproma)
 	
 	# path to the newly created script (needed for launching it)
         path_to_newscript = os.path.join(path_run_dir,"exp.%s.run" %new_script)
