@@ -42,12 +42,14 @@ def define_and_submit_job(hostname,wallclocktime,path_to_newscript,nnodes,euler_
 
     # Euler login nodes
     elif 'eu-login' in hostname:
-        if euler_node == 6:
+        if euler_node == 7:
+            submit_job = 'bsub -W %s -n %s -R "select[model==EPYC_7H12]" < %s' %(wallclocktime,nnodes,path_to_newscript)
+        elif euler_node == 6:
             submit_job = 'bsub -W %s -n %s -R "select[model==EPYC_7742]" < %s' %(wallclocktime,nnodes,path_to_newscript)
         elif euler_node == 4:
             submit_job = 'bsub -W %s -n %s -R "select[model==XeonGold_6150]" -R "span[ptile=36]" < %s' %(wallclocktime,nnodes,path_to_newscript)
         else:
-            print('Error: Please specify a correct Euler node (4 or 6).')
+            print('Error: Please specify a correct Euler node (4,6 or 7).')
             exit(-1)
     
 
