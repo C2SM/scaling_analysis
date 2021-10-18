@@ -21,7 +21,9 @@ import def_exps_plot_2021 as defexp
 path = os.getcwd()
 
 # Settings
-settings = 'benchmark_2021' # 'icon_2.6.3.0'
+settings = 'benchmark_2021'
+#settings = 'benchmark_2021_r2b9'
+#settings = 'icon_2.6.3.0' 
 
 if settings == 'icon_2.6.3.0':
     machine = 'euler6' # daint
@@ -53,6 +55,11 @@ if settings == 'icon_2.6.3.0':
         print("Exiting")
         exit()
 
+    # x-axis lim
+    min_N = None
+    max_N = None
+    xticks = 5
+
 elif settings == 'benchmark_2021':
     variables = ['Efficiency', 'Wallclock', 'Speedup', 'NH_year']
 
@@ -68,6 +75,27 @@ elif settings == 'benchmark_2021':
                       defexp.icon_gpu_pgi_amip_rte,
                     ]
 
+    # x-axis lim
+    min_N = None
+    max_N = None
+    xticks = 5
+
+elif settings == 'benchmark_2021_r2b9':
+    variables = ['Efficiency', 'Wallclock', 'Speedup', 'NH_year']
+
+    name_plot = 'scaling_plot_r2b9'
+    title = 'Scaling Plot'
+
+    xlabel = '# Nodes'
+    files_to_read = [
+                      defexp.icon_r2b9,
+                    ]
+
+    # x-axis lim
+    min_N = 900
+    max_N = 2000
+    xticks = 100
+
 else:
     print("Please specify a correct setting")
     print("Exiting")
@@ -79,9 +107,6 @@ lo_savefig = True
 lo_best_conf = True    # plot the best configuration on Efficiency plot
 lo_zoom_wc = False
 
-# x-axis lim
-min_N = None
-max_N = None
 
 #----------------------Begin of script-----------------------------------------------------------
 
@@ -144,8 +169,7 @@ for var_to_plot in variables :
         # plot
         dt.plot(kind='line', x='N_Nodes', y=var_to_plot, ax=ax,label=exp.label, title=title+', '+var_to_plot, **exp.line_appareance)
 
-        # highlight the chosen config 
-        #if var_to_plot == 'Efficiency' and lo_best_conf :
+        # highlight the chosen config for all plots
         if lo_best_conf:
             best_n = exp.bestconf
             if best_n in dt.N_Nodes.values:
@@ -180,9 +204,9 @@ for var_to_plot in variables :
     if min_N is None :
         min_N = 0
     if max_N is None:
-        max_N = max(out_df.N_Nodes)
+        max_N = max(out_df.N_Nodes) * 1.05 
     ax.set_xlim([min_N,max_N])
-    ax.set_xticks(np.arange(min_N, max_N, step=5),minor=True)
+    ax.set_xticks(np.arange(min_N, max_N+1, step=xticks), minor=False)
     ax.set_xlabel(xlabel)
     if lo_zoom_wc:
         ax.set_ylim([0,7])
@@ -194,7 +218,7 @@ for var_to_plot in variables :
 
     if var_to_plot == 'Speedup':
         ax.plot([0,max_N],[0,max_N], color='black')
-        ax.set_ylim([0,max_N])
+        ax.set_ylim([min_N,max_N])
     #ax.set_ylim([10,45])
 
     # y label

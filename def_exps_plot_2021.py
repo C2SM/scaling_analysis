@@ -25,17 +25,20 @@ class experiment:
 # Definition of each experiment properties (colors, labels,ect)
 
 echam_ham_amip_T63L47 = experiment(name='ECHAM-HAM_amip_T63L47',
-                                   label='ECHAM-HAM 1M', bestconf=36,
+                                   label='ECHAM-HAM 1M (cpu, intel)', bestconf=36,
                                    marker='>', color='#fdcc8a', linestyle='-')
 icon_ham_amip = experiment(name='ICON-HAM_amip',
-                               label='ICON-HAM 1M', bestconf=19,
+                               label='ICON-HAM 1M (cpu, pgi)', bestconf=19,
                                marker='<', color='#fc8d59', linestyle='-')
 icon_cpu_gcc_amip = experiment(name='ICON_cpu_gcc_amip',
-                               label='ICON (cpu, gcc) 1M', bestconf=43,
+                               label='ICON 1M (cpu, gcc)', bestconf=43,
                                marker='x', color='#bdc9e1', linestyle='--')
 icon_cpu_pgi_amip = experiment(name='ICON_cpu_pgi_amip',
-                               label='ICON (cpu, pgi) 1M', bestconf=42,
+                               label='ICON 1M (cpu, pgi)', bestconf=42,
                                marker='x', color='#67a9cf', linestyle='-')
 icon_gpu_pgi_amip_rte = experiment(name='ICON_gpu_pgi_amip_rte',
-                               label='ICON (gpu) 1M', bestconf=4,
+                               label='ICON 1M (gpu, pgi)', bestconf=4,
                                marker='v', color='#02818a', linestyle='-')
+icon_r2b9 = experiment(name='ICON_R2B9',
+                               label='ICON@R2B9 1h (gpu, pgi)', bestconf=1692,
+                               marker='.', color='#b30000', linestyle='-')
