@@ -6,7 +6,6 @@
  
 # Colombe Siegenthaler    C2SM (ETHZ) , 09.2018
 # Michael Jähn            C2SM (ETHZ) , 09.2021
-
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages  # tiple pages in pdf
 import pandas as pd
