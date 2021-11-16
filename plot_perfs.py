@@ -36,7 +36,7 @@ if __name__ == "__main__":
                         '-x',
                         dest='xticks',
                         default=5,
-                        type= int,
+                        type=int,
                         help='number of ticks on x axis')
     parser.add_argument('--title',
                         '-t',
