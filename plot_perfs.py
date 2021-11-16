@@ -16,7 +16,7 @@ import numpy as np
 import socket
 import argparse
 
-import def_exps_plot as defexp
+import def_exps_plot_test as defexp
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -24,18 +24,21 @@ if __name__ == "__main__":
                         '-miN',
                         dest='min_N',
                         default=0,
+                        type=int,
                         help='minimum number of nodes')
     parser.add_argument('--maxN',
                         '-maN',
                         dest='max_N',
                         default=None,
+                        type=int,
                         help='maximum number of nodes')
     parser.add_argument('--xtick',
                         '-x',
                         dest='xticks',
                         default=5,
+                        type= int,
                         help='number of ticks on x axis')
-    parser.add_argument('--tit',
+    parser.add_argument('--title',
                         '-t',
                         dest='title',
                         default='Scaling plot',
