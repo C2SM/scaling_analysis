@@ -16,7 +16,7 @@ import numpy as np
 import socket
 import argparse
 
-import def_exps_plot_test as defexp
+import def_exps_plot as defexp
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
