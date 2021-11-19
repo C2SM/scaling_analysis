@@ -189,7 +189,9 @@ if __name__ == "__main__":
             args.max_N = max(out_df.N_Nodes) * 1.05
         ax.set_xlim([args.min_N, args.max_N])
         if args.xticks is not None:
-            ax.set_xticks(np.arange(args.min_N, args.max_N + 1, step=args.xticks),
+            ax.set_xticks(np.arange(args.min_N,
+                                    args.max_N + 1,
+                                    step=args.xticks),
                           minor=False)
         ax.set_xlabel(xlabel)
         if lo_zoom_wc:
