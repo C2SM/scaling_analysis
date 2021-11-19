@@ -58,4 +58,9 @@ daint_02 = experiment(name='atm_rte_rrtmgp_amip_test_gcc02',
                       color='#fb6a4a',
                       linestyle='-')
 
-daint_03 = experiment(name='atm_rte_rrtmgp_amip_test_pgi02', label='pgi.02', bestconf=35, marker='o', color='#cb181d',linestyle='-')
+daint_03 = experiment(name='atm_rte_rrtmgp_amip_test_pgi02',
+                      label='pgi.02',
+                      bestconf=35,
+                      marker='o',
+                      color='#cb181d',
+                      linestyle='-')
