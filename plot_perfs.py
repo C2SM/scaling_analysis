@@ -35,7 +35,6 @@ if __name__ == "__main__":
     parser.add_argument('--xtick',
                         '-x',
                         dest='xticks',
-                        default=5,
                         type=int,
                         help='number of ticks on x axis')
     parser.add_argument('--title',
@@ -189,8 +188,9 @@ if __name__ == "__main__":
         if args.max_N is None:
             args.max_N = max(out_df.N_Nodes) * 1.05
         ax.set_xlim([args.min_N, args.max_N])
-        ax.set_xticks(np.arange(args.min_N, args.max_N + 1, step=args.xticks),
-                      minor=False)
+        if args.xticks is not None:
+            ax.set_xticks(np.arange(args.min_N, args.max_N + 1, step=args.xticks),
+                          minor=False)
         ax.set_xlabel(xlabel)
         if lo_zoom_wc:
             ax.set_ylim([0, 7])
