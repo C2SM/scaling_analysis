@@ -20,7 +20,7 @@ import glob
 import datetime
 import itertools
 import pandas as pd  # need to load module load PyExtensions on Piz Daint
-
+import pdb
 # defines defaults values for nnodes, wallclock and date
 default_wallclock = {
     'wallclock': np.nan,
@@ -154,9 +154,11 @@ if __name__ == "__main__":
         list_iline = []
         lo_success = False
         file = open(filename,'r')
+        count = 0
         while True:
             try: # Some lines are read in as binary with the pgi compilation
                 line = file.readline()
+                count=+1
                 if string in line:
                     list_line.append(line)
                     list_iline.append(count)
