@@ -153,10 +153,14 @@ if __name__ == "__main__":
         list_line = []
         list_iline = []
         lo_success = False
+<<<<<<< HEAD
         file = open(filename,'r')
         count = 0
+=======
+        file = open(filename, 'r')
+>>>>>>> 2cbbaa0defbb94b07a6e430f494beb33e040f29f
         while True:
-            try: # Some lines are read in as binary with the pgi compilation
+            try:  # Some lines are read in as binary with the pgi compilation
                 line = file.readline()
                 count=+1
                 if string in line:
