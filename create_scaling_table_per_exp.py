@@ -153,13 +153,19 @@ if __name__ == "__main__":
         list_line = []
         list_iline = []
         lo_success = False
-
-        for iline, line in enumerate(open(filename)):
-            if string in line:
-                list_line.append(line)
-                list_iline.append(iline)
-                lo_success = True
-
+        file = open(filename,'r')
+        while True:
+            try: # Some lines are read in as binary with the pgi compilation
+                line = file.readline()
+                if string in line:
+                    list_line.append(line)
+                    list_iline.append(count)
+                    lo_success = True
+                if not line:
+                    break
+            except Exception as e:
+                continue
+        file.close()
         return {"success": lo_success, "iline": list_iline, "line": list_line}
 
     def get_wallclock_icon(filename, no_x, num_ok=1):
