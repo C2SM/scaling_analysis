@@ -20,7 +20,7 @@ import glob
 import datetime
 import itertools
 import pandas as pd  # need to load module load PyExtensions on Piz Daint
-import pdb
+
 # defines defaults values for nnodes, wallclock and date
 default_wallclock = {
     'wallclock': np.nan,
