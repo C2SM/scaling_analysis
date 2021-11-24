@@ -153,12 +153,12 @@ if __name__ == "__main__":
         list_line = []
         list_iline = []
         lo_success = False
-        file = open(filename,'r')
+        file = open(filename, 'r')
         count = 0
         while True:
             try:  # Some lines are read in as binary with the pgi compilation
                 line = file.readline()
-                count=+1
+                count = +1
                 if string in line:
                     list_line.append(line)
                     list_iline.append(count)
