@@ -153,9 +153,9 @@ if __name__ == "__main__":
         list_line = []
         list_iline = []
         lo_success = False
-        file = open(filename,'r')
+        file = open(filename, 'r')
         while True:
-            try: # Some lines are read in as binary with the pgi compilation
+            try:  # Some lines are read in as binary with the pgi compilation
                 line = file.readline()
                 if string in line:
                     list_line.append(line)
