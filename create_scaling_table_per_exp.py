@@ -158,7 +158,7 @@ if __name__ == "__main__":
         while True:
             try:  # Some lines are read in as binary with the pgi compilation
                 line = file.readline()
-                count = +1
+                count += 1
                 if string in line:
                     list_line.append(line)
                     list_iline.append(count)
