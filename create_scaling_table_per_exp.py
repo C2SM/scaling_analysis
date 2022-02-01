@@ -154,7 +154,7 @@ if __name__ == "__main__":
         list_iline = []
         lo_success = False
         file = open(filename, 'r')
-        count = 0
+        count = -1
         while True:
             try:  # Some lines are read in as binary with the pgi compilation
                 line = file.readline()
@@ -275,7 +275,7 @@ if __name__ == "__main__":
 
             # For summary_iline + x had to be subtracted by one
             line_time = [
-                lines[summary_iline + 1].split()[i]
+                lines[summary_iline + 2].split()[i]
                 for i in [ind_start, ind_end]
             ]
             time_arr = [
@@ -284,8 +284,7 @@ if __name__ == "__main__":
             ]
 
             if use_timer_report:
-                # two spaces had to be added
-                string_timer_report = 'name                                # calls'
+                string_timer_report = '# calls'
                 timer_in_file = grep(string_timer_report, filename)
                 if timer_in_file['success']:
                     timer_line = timer_in_file["line"][0]
@@ -306,10 +305,10 @@ if __name__ == "__main__":
 
             # Nnodes
             line_labels_n = [
-                s.strip() for s in lines[summary_iline + 6].split()
+                s.strip() for s in lines[summary_iline + 7].split()
             ]
             ind_nodes = line_labels_n.index('NNodes')
-            nodes = int(lines[summary_iline + 8].split()[ind_nodes])
+            nodes = int(lines[summary_iline + 9].split()[ind_nodes])
 
             f.close()
         else:
