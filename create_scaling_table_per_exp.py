@@ -154,7 +154,7 @@ if __name__ == "__main__":
         list_iline = []
         lo_success = False
         file = open(filename, 'r')
-        count = 0
+        count = -1
         while True:
             try:  # Some lines are read in as binary with the pgi compilation
                 line = file.readline()
@@ -273,6 +273,7 @@ if __name__ == "__main__":
             ind_start = line_labels.index('Start')
             ind_end = line_labels.index('End')
 
+            # For summary_iline + x had to be subtracted by one
             line_time = [
                 lines[summary_iline + 2].split()[i]
                 for i in [ind_start, ind_end]
@@ -283,7 +284,7 @@ if __name__ == "__main__":
             ]
 
             if use_timer_report:
-                string_timer_report = 'name                              # calls'
+                string_timer_report = '# calls'
                 timer_in_file = grep(string_timer_report, filename)
                 if timer_in_file['success']:
                     timer_line = timer_in_file["line"][0]
