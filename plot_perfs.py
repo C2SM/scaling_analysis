@@ -102,7 +102,6 @@ if __name__ == "__main__":
         # Define global Dataframe (per variable) for output
         out_df = pd.DataFrame(columns=['N_Nodes'])
 
-
         print('Plot variable {}'.format(var_to_plot))
 
         fig, ax = plt.subplots()
