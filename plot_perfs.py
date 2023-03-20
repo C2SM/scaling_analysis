@@ -105,6 +105,7 @@ if __name__ == "__main__":
 
         print('Plot variable {}'.format(var_to_plot))
 
+
         fig, ax = plt.subplots()
         # for each file, read the dataframe and plot
         for exp_name in experiments:
