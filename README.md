@@ -9,6 +9,21 @@ Below is a description of each script and a recipe.
 - Original devleopment: Colombe Siegenthaler (2020-01)
 - Maintainted by Michael Jähn from 2021-03 on
 
+## Table of contents
+  - [Recipe for scaling analysis with ECHAM/ICON-(HAM)](#recipe-for-scaling-analysis-with-echamicon-ham)
+    - [1. Configure and compile your model as usual.](#1-configure-and-compile-your-model-as-usual)
+    - [2. Prepare your running script](#2-prepare-your-running-script)
+      - [ICON](#icon)
+      - [ECHAM](#echam)
+    - [3. Create and launch different running scripts based on my_exp, but using different numbers of nodes.](#3-create-and-launch-different-running-scripts-based-on-my_exp-but-using-different-numbers-of-nodes)
+      - [ICON](#icon)
+      - [ECHAM](#echam)
+    - [4. When all the runs are finished, read all the slurm/log files to get the Wallclock for each run, and put them into a table:](#4-when-all-the-runs-are-finished-read-all-the-slurmlog-files-to-get-the-wallclock-for-each-run-and-put-them-into-a-table)
+      - [ICON](#icon)
+      - [ECHAM](#echam)
+    - [5. Create a summary plot and table of the variable you wish (Efficiency, NH, Wallclock) for different experiments with respect to the number of nodes.](#5-create-a-summary-plot-and-table-of-the-variable-you-wish-efficiency-nh-wallclock-for-different-experiments-with-respect-to-the-number-of-nodes)
+  - [Limitations on Euler](#limitations-on-euler)
+
 ## Recipe for scaling analysis with ECHAM/ICON-(HAM)
 
 ### 1. Configure and compile your model as usual.
