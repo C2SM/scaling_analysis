@@ -101,8 +101,8 @@ if __name__ == "__main__":
     if l_cpus_def:
         if args.mod.upper().startswith("ICON-CLM"):
             slurm_files_ar = [
-                glob.glob("{}/{}_nnodes{}_*.o*".format(
-                    path_exps_dir, args.basis_name, n))
+                glob.glob("{}/{}_nnodes{}_*.o*".format(path_exps_dir,
+                                                       args.basis_name, n))
                 for n in nodes_to_proceed
             ]
             slurm_files = list(itertools.chain.from_iterable(slurm_files_ar))
@@ -371,7 +371,8 @@ if __name__ == "__main__":
             jobnumber = float(filename.split('.')[-2])
         if args.mod.upper() == "ICON-CLM":
             success_message = "ICON experiment FINISHED"
-            if check_icon_finished(filename, success_message) or args.ignore_errors:
+            if check_icon_finished(filename,
+                                   success_message) or args.ignore_errors:
                 # get # nodes and wallclock
                 if args.no_sys_report:
                     # infer nnodes from MPI-procs in ICON output
@@ -383,14 +384,14 @@ if __name__ == "__main__":
                     nnodes = nnodes // args.cpu_per_node
 
                     wallclock = get_wallclock_icon(
-                        filename, 
-                        args.no_x, 
-                        num_ok=1, 
+                        filename,
+                        args.no_x,
+                        num_ok=1,
                         success_message=success_message)["wc"].total_seconds()
                     date_run = get_wallclock_icon(
-                        filename, 
+                        filename,
                         args.no_x,
-                        num_ok=1, 
+                        num_ok=1,
                         success_message=success_message)["st"]
                 else:
                     n_wc_st = get_wallclock_Nnodes_gen_daint(
