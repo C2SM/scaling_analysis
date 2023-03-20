@@ -28,40 +28,12 @@ euler_01 = experiment(name='atm_rte_rrtmgp_amip_test_gccO2',
                       label='Euler7, gcc.O2',
                       bestconf=50,
                       marker='>',
-                      color='#fcae91',
+                      color='#253494',
                       linestyle='-')
 
-euler_02 = experiment(name='atm_rte_rrtmgp_amip_test_e6_gccO2',
-                      label='Euler6, gcc.O2',
-                      bestconf=200,
-                      marker='x',
-                      color='#fb6a4a',
-                      linestyle='-')
-
-euler_03 = experiment(name='atm_rte_rrtmgp_amip_test_gccO3',
-                      label='gcc.O3',
-                      bestconf=35,
-                      marker='o',
-                      color='#cb181d',
-                      linestyle='-')
-
-daint_01 = experiment(name='atm_rte_rrtmgp_amip_test_gccO1',
-                      label='gcc.O1',
-                      bestconf=35,
+daint_01 = experiment(name='icon_cordex_12km_era5_gpu_20230222',
+                      label='CORDEX-12km',
+                      bestconf=36,
                       marker='>',
-                      color='#fcae92',
-                      linestyle='-')
-
-daint_02 = experiment(name='atm_rte_rrtmgp_amip_test_gccO2',
-                      label='gcc.O2',
-                      bestconf=50,
-                      marker='x',
-                      color='#fb6a4a',
-                      linestyle='-')
-
-daint_03 = experiment(name='atm_rte_rrtmgp_amip_test_pgiO2',
-                      label='pgi.O2',
-                      bestconf=35,
-                      marker='o',
-                      color='#cb181d',
+                      color='#253494',
                       linestyle='-')
