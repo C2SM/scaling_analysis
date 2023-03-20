@@ -94,14 +94,13 @@ if __name__ == "__main__":
     # Define figure
     fig, ax = plt.subplots()
 
-    # Define global Dataframe for output
-    out_df = pd.DataFrame(columns=['N_Nodes'])
-
     # open multipage pdf
     if lo_savefig:
         pp = PdfPages(os.path.join(path, '{}.pdf'.format(args.name_plot)))
 
     for var_to_plot in variables:
+        # Define global Dataframe (per variable) for output
+        out_df = pd.DataFrame(columns=['N_Nodes'])
 
         print('Plot variable {}'.format(var_to_plot))
 
@@ -175,7 +174,7 @@ if __name__ == "__main__":
 
             # Fill the out dataframe
             out_df = pd.merge(out_df, \
-                          dt[['N_Nodes',var_to_plot]].rename(columns={var_to_plot: '{}'.format(exp.label)}), \
+                          dt[['N_Nodes',var_to_plot]].rename(columns={var_to_plot: f'{exp.label}_{var_to_plot}'}), \
                       how='outer', on=['N_Nodes'])
 
             # cleaning
