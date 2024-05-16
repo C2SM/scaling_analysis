@@ -206,7 +206,6 @@ if __name__ == "__main__":
 
         return (wallclock, nnodes, date_run)
 
-
     # security. If not file found, exit
     if len(slurm_files) == 0:
         print("No slurm file founded with this basis name")
