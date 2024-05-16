@@ -15,8 +15,109 @@ default_wallclock = {
     'date_run': datetime.datetime(1900, 1, 1).strftime("%Y-%m-%d %H:%M:%S")
 }
 
-if __name__ == "__main__":
+def grep(string, filename):
+    # returns lines of file_name where string appears
+    # mimic the "grep" function
 
+    # initialisation
+    # list of lines where string is found
+    list_line = []
+    list_iline = []
+    lo_success = False
+    file = open(filename, 'r')
+    count = 0
+    while True:
+        try:  # Some lines are read in as binary with the pgi compilation
+            line = file.readline()
+            count += 1
+            if string in line:
+                list_line.append(line)
+                list_iline.append(count)
+                lo_success = True
+            if not line:
+                break
+        except Exception as e:
+            continue
+    file.close()
+    return {"success": lo_success, "iline": list_iline, "line": list_line}
+
+    
+def extract_line(filename, line_number):
+    # Open the file in read mode
+    with open(filename, 'r') as file:
+        # Read all lines into a list
+        lines = file.readlines()
+
+        # Check if the line number is valid
+        if 1 <= line_number <= len(lines):
+            # Extract the content of the specified line
+            content = lines[line_number - 1]
+            return content.strip()  # Strip any leading/trailing whitespace
+        else:
+            print("Error: Line number is out of range.")
+            return None
+
+
+def extract_job_id(filename, prefix="slurm-", suffix=".out"):
+    # Find the starting index of "slurm-" and ".out"
+    start_index = filename.find(prefix) + len(prefix)
+    end_index = filename.find(suffix)
+
+    # Extract the job ID substring
+    if start_index != -1 and end_index != -1:
+        job_id = filename[start_index:end_index]
+        return job_id
+    else:
+        print("Error: Filename format is incorrect.")
+        return None
+
+
+def get_wallclock_icon(filename, no_x, num_ok=1, success_message=None):
+
+    required_ok_streams = num_ok
+    if success_message:
+        OK_streams = grep(success_message, filename)["line"]
+    else:
+        OK_streams = grep('Script run successfully:  OK', filename)["line"]
+
+    if len(OK_streams) >= required_ok_streams:
+        total_grep = grep("total   ", filename)["line"]
+        wallclock = float(total_grep[0].split()[-2])
+        line_times = grep(" Elapsed", filename)["iline"][0] + 2
+        date_run = extract_line(filename, line_times).split()[2]
+    else:
+        print("file {} did not finish properly".format(filename))
+        print("Set Wallclock = 0")
+        wallclock = datetime.timedelta(0)
+
+    return wallclock, date_run
+
+def check_icon_finished(filename,
+                        string_sys_report='Script run successfully:  OK'):
+    # return True if icon finished properly
+
+    # initilisation
+    lo_finished_ok = False
+
+    # look for ok_line
+    if grep(string_sys_report, filename)['success']:
+        lo_finished_ok = True
+
+    return (lo_finished_ok)
+
+def set_default_error_slurm_file(txt_message="Problem in the slurm file"):
+    # error in the slurm file, set default values
+
+    wallclock = default_wallclock['wallclock']
+    nnodes = default_wallclock['nnodes']
+    date_run = default_wallclock['date_run']
+    print(txt_message)
+    print("Set Wallclock = {} , and nodes = {}".format(wallclock, nnodes))
+
+    return (wallclock, nnodes, date_run)
+
+
+if __name__ == "__main__":
     # parsing arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp', '-e', dest = 'basis_name',\
@@ -42,10 +143,10 @@ if __name__ == "__main__":
                             default='icon',\
                             help='model type (icon, icon-ham, icon-clm)')
 
-    parser.add_argument('--cpu_per_node', dest = 'cpu_per_node',\
-                        default = 12,\
+    parser.add_argument('--mpi_procs_per_node', dest = 'mpi_procs_per_node',\
+                        default = 1,\
                         type = int,\
-                        help = 'numper of CPUs per node')
+                        help = 'numper of MPI procs per node')
 
     parser.add_argument('--fact_nh_yr', '-y', dest = 'factor_nh_year',\
                         default = 12,\
@@ -85,7 +186,7 @@ if __name__ == "__main__":
     if l_cpus_def:
         if args.mod.upper().startswith("ICON-CLM"):
             slurm_files_ar = [
-                glob.glob("{}/{}_nnodes{}_*.o*".format(path_exps_dir,
+                glob.glob("{}/{}_nnodes{}/slurm-*.out".format(path_exps_dir,
                                                        args.basis_name, n))
                 for n in nodes_to_proceed
             ]
@@ -101,8 +202,8 @@ if __name__ == "__main__":
     # 3rd possibility : use all the slurm files containing the basis name
     if (not l_cpus_def):
         if args.mod.upper().startswith("ICON-CLM"):
-            slurm_files = glob.glob("{}/*{}*.o*".format(
-                path_exps_dir, args.basis_name, args.basis_name))
+            slurm_files = sorted(glob.glob("{}/{}_nnodes*/slurm-*.out".format(
+                path_exps_dir, args.basis_name, args.basis_name)))
         elif args.mod.upper().startswith("ICON"):
             slurm_files = glob.glob("{}/LOG.exp.{}*.run.*".format(
                 path_exps_dir, args.basis_name, args.basis_name))
@@ -127,96 +228,18 @@ if __name__ == "__main__":
     #ilin = 0
 
 
-    def grep(string, filename):
-        # returns lines of file_name where string appears
-        # mimic the "grep" function
-
-        # initialisation
-        # list of lines where string is found
-        list_line = []
-        list_iline = []
-        lo_success = False
-        file = open(filename, 'r')
-        count = -1
-        while True:
-            try:  # Some lines are read in as binary with the pgi compilation
-                line = file.readline()
-                count += 1
-                if string in line:
-                    list_line.append(line)
-                    list_iline.append(count)
-                    lo_success = True
-                if not line:
-                    break
-            except Exception as e:
-                continue
-        file.close()
-        return {"success": lo_success, "iline": list_iline, "line": list_line}
-
-    def get_wallclock_icon(filename, no_x, num_ok=1, success_message=None):
-
-        required_ok_streams = num_ok
-        if success_message:
-            OK_streams = grep(success_message, filename)["line"]
-        else:
-            OK_streams = grep('Script run successfully:  OK', filename)["line"]
-
-        if len(OK_streams) >= required_ok_streams:
-            timezone = 'CEST'
-            time_grep = grep(timezone, filename)["line"]
-            if not time_grep:
-                timezone = 'CET'
-                time_grep = grep(timezone, filename)["line"]
-
-            time_arr = [
-                datetime.datetime.strptime(
-                    s.strip(), '%a %b %d %H:%M:%S ' + timezone + ' %Y')
-                for s in time_grep
-            ]
-
-            wallclock = time_arr[-1] - time_arr[0]
-        else:
-            print("file {} did not finish properly".format(filename))
-            print("Set Wallclock = 0")
-            wallclock = datetime.timedelta(0)
-
-        return {"wc": wallclock, "st": time_arr[0]}
-
-    def check_icon_finished(filename,
-                            string_sys_report='Script run successfully:  OK'):
-        # return True if icon finished properly
-
-        # initilisation
-        lo_finished_ok = False
-
-        # look for ok_line
-        if grep(string_sys_report, filename)['success']:
-            lo_finished_ok = True
-
-        return (lo_finished_ok)
-
-    def set_default_error_slurm_file(txt_message="Problem in the slurm file"):
-        # error in the slurm file, set default values
-
-        wallclock = default_wallclock['wallclock']
-        nnodes = default_wallclock['nnodes']
-        date_run = default_wallclock['date_run']
-        print(txt_message)
-        print("Set Wallclock = {} , and nodes = {}".format(wallclock, nnodes))
-
-        return (wallclock, nnodes, date_run)
 
 
     # security. If not file found, exit
     if len(slurm_files) == 0:
-        print("No slurm file founded with this basis name")
+        print("No slurm file found with this basis name")
         print("Exiting")
         exit()
 
     # loop over number of cpus to be lauched
     for filename in slurm_files:
 
-        print("Read file : {}".format(os.path.basename(filename)))
+        print(f"Read file: {filename}")
         # read nnodes and wallclock from file
         if args.mod.upper() == "ICON":
             if check_icon_finished(filename) or args.ignore_errors:
@@ -225,8 +248,7 @@ if __name__ == "__main__":
                 nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
                                   filename)["line"][0]
                 nnodes = int(nodes_line.split(' ')[6])
-
-                nnodes = nnodes // args.cpu_per_node
+                nnodes = nnodes // args.mpi_procs_per_node
 
                 wallclock = get_wallclock_icon(
                     filename, args.no_x)["wc"].total_seconds()
@@ -238,7 +260,7 @@ if __name__ == "__main__":
             # get job number
             jobnumber = float(filename.split('.')[-2])
         elif args.mod.upper() == "ICON-CLM":
-            success_message = "ICON experiment FINISHED"
+            success_message = "----- ICON finished"
             if check_icon_finished(filename,
                                    success_message) or args.ignore_errors:
                 # get # nodes and wallclock
@@ -246,34 +268,27 @@ if __name__ == "__main__":
                 nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
                                   filename)["line"][0]
                 nnodes = int(nodes_line.split(' ')[6])
+                nnodes = nnodes // args.mpi_procs_per_node
 
-                nnodes = nnodes // args.cpu_per_node
-
-                wallclock = get_wallclock_icon(
+                wallclock, date_run = get_wallclock_icon(
                     filename,
                     args.no_x,
                     num_ok=1,
-                    success_message=success_message)["wc"].total_seconds()
-                date_run = get_wallclock_icon(
-                    filename,
-                    args.no_x,
-                    num_ok=1,
-                    success_message=success_message)["st"]
+                    success_message=success_message)
+                print(f"Simulation on {nnodes} nodes launched at: {date_run}")
             else:
                 wallclock, nnodes, date_run = set_default_error_slurm_file(
                     "Warning : Run did not finish properly")
 
             # get job number
-            jobnumber = filename[-8:]
-            print(jobnumber)
+            jobnumber = extract_job_id(filename)
         elif args.mod.upper() == "ICON-HAM":
             # get # nodes and wallclock
             # infer nnodes from MPI-procs in ICON output
             nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
                               filename)["line"][0]
             nnodes = int(nodes_line.split(' ')[6])
-
-            nnodes = nnodes // args.cpu_per_node
+            nnodes = nnodes // args.mpi_procs_per_node
 
             wallclock = get_wallclock_icon(filename, args.no_x,
                                            num_ok=0)["wc"].total_seconds()
@@ -317,8 +332,8 @@ if __name__ == "__main__":
     perf_sorted.to_csv(filename_out,
                        columns=[
                            'Date', 'Jobnumber', 'N_Nodes', 'Wallclock',
-                           'Wallclock_hum', 'Speedup', 'Node_hours',
-                           'Efficiency', 'NH_year'
+                           'Wallclock_hum', 'Speedup', 'Efficiency',
+                           'Node_hours', 'NH_year'
                        ],
                        sep=';',
                        index=False,
