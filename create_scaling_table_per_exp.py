@@ -39,8 +39,8 @@ if __name__ == "__main__":
                             help='resolution(with ocean) eg T63L31GR15 ')
 
     parser.add_argument('--mod','-m', dest = 'mod',\
-                            default='echam-ham',\
-                            help='model type (echam-ham, icon, icon-ham)')
+                            default='icon',\
+                            help='model type (icon, icon-ham, icon-clm)')
 
     parser.add_argument('--cpu_per_node', dest = 'cpu_per_node',\
                         default = 12,\
@@ -97,14 +97,6 @@ if __name__ == "__main__":
                 for n in nodes_to_proceed
             ]
             slurm_files = list(itertools.chain.from_iterable(slurm_files_ar))
-        elif args.mod.upper() == "ECHAM-HAM":
-            slurm_files_ar = [
-                glob.glob("{}/{}_cpus{}/slurm*".format(path_exps_dir,
-                                                       args.basis_name,
-                                                       n * args.cpu_per_node))
-                for n in nodes_to_proceed
-            ]
-            slurm_files = list(itertools.chain.from_iterable(slurm_files_ar))
 
     # 3rd possibility : use all the slurm files containing the basis name
     if (not l_cpus_def):
@@ -113,9 +105,6 @@ if __name__ == "__main__":
                 path_exps_dir, args.basis_name, args.basis_name))
         elif args.mod.upper().startswith("ICON"):
             slurm_files = glob.glob("{}/LOG.exp.{}*.run.*".format(
-                path_exps_dir, args.basis_name, args.basis_name))
-        elif args.mod.upper() == "ECHAM-HAM":
-            slurm_files = glob.glob("{}/{}*/slurm_{}*".format(
                 path_exps_dir, args.basis_name, args.basis_name))
 
     # fill up array
@@ -217,42 +206,6 @@ if __name__ == "__main__":
 
         return (wallclock, nnodes, date_run)
 
-    def get_date_from_echam_slurm_file(filename):
-        string_timer_report = 'Submit            Eligible'
-        summary_in_file = grep(string_timer_report, filename)
-        if summary_in_file['success']:
-            summary_line = summary_in_file["line"][0]
-            summary_iline = summary_in_file["iline"][0]
-            f = open(filename)
-            lines = f.readlines()
-
-            line_labels = [s.strip() for s in summary_line.split()]
-            ind_start = line_labels.index('Start')
-            ind_end = line_labels.index('End')
-
-            line_time = [
-                lines[summary_iline + 2].split()[i]
-                for i in [ind_start, ind_end]
-            ]
-            first_row = grep(string_timer_report, filename)
-            first_row_line = first_row["line"][0]
-            first_row_iline = first_row["iline"][0]
-            ind_start = line_labels.index('Start')
-            ind_end = line_labels.index('End')
-            line_time = [
-                lines[first_row_iline + 2].split()[i]
-                for i in [ind_start, ind_end]
-            ]
-            time_arr = [
-                datetime.datetime.strptime(s.strip(), '%Y-%m-%dT%H:%M:%S')
-                for s in line_time
-            ]
-            date_run = time_arr[0]
-        else:
-            print("Warning: Cannot get date from slurm file %s" % filename)
-            date_run = default_wallclock['date_run']
-
-        return date_run
 
     # security. If not file found, exit
     if len(slurm_files) == 0:
@@ -285,7 +238,7 @@ if __name__ == "__main__":
 
             # get job number
             jobnumber = float(filename.split('.')[-2])
-        if args.mod.upper() == "ICON-CLM":
+        elif args.mod.upper() == "ICON-CLM":
             success_message = "ICON experiment FINISHED"
             if check_icon_finished(filename,
                                    success_message) or args.ignore_errors:
@@ -315,7 +268,7 @@ if __name__ == "__main__":
             # get job number
             jobnumber = filename[-8:]
             print(jobnumber)
-        if args.mod.upper() == "ICON-HAM":
+        elif args.mod.upper() == "ICON-HAM":
             # get # nodes and wallclock
             # infer nnodes from MPI-procs in ICON output
             nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
@@ -331,18 +284,6 @@ if __name__ == "__main__":
 
             # get job number
             jobnumber = float(filename.split('.')[-2])
-
-        elif args.mod.upper() == "ECHAM-HAM":
-            ncpus_line = grep("Total number of PEs", filename)["line"][0]
-            ncpus = int(ncpus_line.split(':')[1].split()[0].strip())
-            nnodes = ncpus / float(args.cpu_per_node)
-
-            wallclock_line = grep("Wallclock", filename)["line"][0]
-            wallclock = float(wallclock_line.split(':')[1].strip()[:-1])
-
-            date_run = get_date_from_echam_slurm_file(filename)
-
-            jobnumber = float(filename.replace('_', '.').split('.')[-2])
 
         # fill array in
         np_2print.append([nnodes, wallclock, jobnumber, date_run])
