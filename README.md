@@ -1,30 +1,11 @@
-# Toolset to perform scaling analysis of ICON(-HAM), ECHAM(-HAM) and MPI-ESM(-HAM)
+# Toolset to perform scaling analysis of ICON
 
 It has been tested on Piz Daint (CSCS) to produce the technical part of production projects at CSCS.
-On Euler (ETHZ) only limited functionality is provided for the analysis of Icon.
+
+On Euler (ETHZ), only limited functionality is provided for the analysis of Icon.
 See [Limitations on Euler](#limitations-on-euler) for more information.
 
 Below is a description of each script and a recipe.
-
-- Original devleopment: Colombe Siegenthaler (2020-01)
-- Maintainted by Michael Jähn from 2021-03 on
-
-## Table of contents
-  - [Recipe for scaling analysis with ECHAM/ICON-(HAM)](#recipe-for-scaling-analysis-with-echamicon-ham)
-    - [1. Configure and compile your model as usual.](#1-configure-and-compile-your-model-as-usual)
-    - [2. Prepare your running script](#2-prepare-your-running-script)
-      - [ICON](#icon)
-      - [ECHAM](#echam)
-    - [3. Create and launch different running scripts based on my_exp, but using different numbers of nodes.](#3-create-and-launch-different-running-scripts-based-on-my_exp-but-using-different-numbers-of-nodes)
-      - [ICON](#icon)
-      - [ECHAM](#echam)
-    - [4. When all the runs are finished, read all the slurm/log files to get the Wallclock for each run, and put them into a table:](#4-when-all-the-runs-are-finished-read-all-the-slurmlog-files-to-get-the-wallclock-for-each-run-and-put-them-into-a-table)
-      - [ICON](#icon)
-      - [ECHAM](#echam)
-    - [5. Create a summary plot and table of the variable you wish (Efficiency, NH, Wallclock) for different experiments with respect to the number of nodes.](#5-create-a-summary-plot-and-table-of-the-variable-you-wish-efficiency-nh-wallclock-for-different-experiments-with-respect-to-the-number-of-nodes)
-  - [Limitations on Euler](#limitations-on-euler)
-
-## Recipe for scaling analysis with ECHAM/ICON-(HAM)
 
 ### 1. Configure and compile your model as usual.
 
@@ -39,25 +20,13 @@ $ conda env create -f environment.yaml
 To load your environment, simply type:
     
 ```console
-$ conda env create -f environment.yaml
+$ conda activate scaling_analysis
 ```
-
-#### ICON
     
-Prepare your machine-independent setting file "my_exp" (e.g. exp.atm_amip, without the '.run').
-
-#### ECHAM
-    
-Prepare your setting file as usual with the jobscript toolkit:
-    
-```console
-$ prepare_run -r [path_to_your_setting_folder] my_exp
-```
+Prepare your machine-independent setting file `my_exp` (e.g. `exp.atm_amip`, without the `'.run`').
 
 ### 3. Create and launch different running scripts based on my_exp, but using different numbers of nodes.
 
-#### ICON
-    
 Use `send_several_run_ncpus_perf_ICON.py`.
 For example for running `my_exp` on 1, 10, 12 and 16 nodes:
     
@@ -81,22 +50,8 @@ The script `send_analyse_different_exp_at_once_ICON.py` (n_step = 1) is a wrappe
 The script `send_analyse_different_exp_at_once_ICON.py` (n_step = 2) is a wrapper which gets
 the wallclocks from the log files for different experiments (for example different set-ups, or compilers) (point 4 of this README).
 
-#### ECHAM
-    
-Use `send_several_run_ncpus_perf.py` which creates and sends several running scripts using the option -o of the jobsubm_echam script.
-For example, sending the my_exp run on 1, 10, 12 and 15 nodes:
-    
-```console
-$ python [path_to_scaling_analysis_tool]/send_several_run_ncpus_perf.py -b [path_to_echam-ham_folder]/my_experiments/my_exp -n 1 10 12 15
-```
-
-With the command above, 4 running folders will be created based on the running folder `my_exp`
-(`my_exp_cpus12`, `my_exp_cpus120`, `my_exp_cpus144and my_exp_cpus180`), and each of them will be launched.
-
 ### 4. When all the runs are finished, read all the slurm/log files to get the Wallclock for each run, and put them into a table:
 
-#### ICON
-    
 Use the option `-m icon`:
     
 ```console
@@ -104,16 +59,6 @@ $ python [path_to_scaling_analysis_tool]/create_scaling_table_per_exp.py -e my_e
 ```
     
 or for different experiments at once: `send_analyse_different_exp_at_once_ICON.py` (n_step = 2) (cf point 3)
-
-#### ECHAM
-    
-Use the option `-m icon`
-    
-```console
-$ python [path_to_scaling_analysis_tool]/create_scaling_table_per_exp.py -e my_exp -m echam-ham
-```
-
-For both model types, this creates a table `my_exp.csv`, which contains the wallclock, efficiency and NH for each run.
 
 ### 5. Create a summary plot and table of the variable you wish (Efficiency, NH, Wallclock) for different experiments with respect to the number of nodes.
 
@@ -126,9 +71,7 @@ $ python [path_to_scaling_analysis_tool]/plot_perfs.py
 ## Limitations on Euler
 
 * The scaling analysis tools were tested for Icon only.
-* Because of differing nodes-architectures on Euler, the number of nodes passed via the -n option
-corresponds to the number of Euler-cores.
-* Parsing the logfiles only works using the --no_sys_report option.
+* Because of differing nodes-architectures on Euler, the number of nodes passed via the -n option corresponds to the number of Euler-cores.
 * In order to have nice plots, the number of Euler-cores needs to be divided by 12.
 * Automatic runtime-specification is not as smooth as on Daint -> a minimum of 20 min is requested in any case.
 
