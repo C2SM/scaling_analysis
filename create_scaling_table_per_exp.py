@@ -229,7 +229,6 @@ if __name__ == "__main__":
 
 
 
-
     # security. If not file found, exit
     if len(slurm_files) == 0:
         print("No slurm file found with this basis name")
