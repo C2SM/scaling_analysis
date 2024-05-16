@@ -70,9 +70,6 @@ for exp in exps_to_analyse:
                         '-e', exp.name,'-o', exp.comp, \
                         '-NH','6', '-n', '1', '12','16','36','48'])
     elif lo_send_batch:
-        print(
-            'WARNING : Sending different experiments with different numbers of nodes for ECHAM_HAM has not been implemented yet'
-        )
         print('The experiment {} is not done asssociated is : {}'.format(
             os.path.join(exp.path, 'run', exp.name), exp.mod.upper()))
     else:
