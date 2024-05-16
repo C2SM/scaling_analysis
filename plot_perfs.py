@@ -150,14 +150,13 @@ if __name__ == "__main__":
                 best_n = exp.bestconf
                 if best_n in dt.N_Nodes.values:
                     if var_to_plot == 'Efficiency':
-                        perf_chosen = float(
-                            dt[dt.N_Nodes == best_n].Efficiency)
-                    if var_to_plot == 'Wallclock':
-                        perf_chosen = float(dt[dt.N_Nodes == best_n].Wallclock)
-                    if var_to_plot == 'Speedup':
-                        perf_chosen = float(dt[dt.N_Nodes == best_n].Speedup)
-                    if var_to_plot == 'NH_year':
-                        perf_chosen = float(dt[dt.N_Nodes == best_n].NH_year)
+                        perf_chosen = float(dt.loc[dt.N_Nodes == best_n, 'Efficiency'].iloc[0])
+                    elif var_to_plot == 'Wallclock':
+                        perf_chosen = float(dt.loc[dt.N_Nodes == best_n, 'Wallclock'].iloc[0])
+                    elif var_to_plot == 'Speedup':
+                        perf_chosen = float(dt.loc[dt.N_Nodes == best_n, 'Speedup'].iloc[0])
+                    elif var_to_plot == 'NH_year':
+                        perf_chosen = float(dt.loc[dt.N_Nodes == best_n, 'NH_year'].iloc[0])
                     ax.scatter(best_n,
                                perf_chosen,
                                s=120.,

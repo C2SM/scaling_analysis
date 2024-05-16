@@ -31,8 +31,8 @@ euler_01 = experiment(name='atm_rte_rrtmgp_amip_test_gccO2',
                       color='#253494',
                       linestyle='-')
 
-daint_01 = experiment(name='icon_cordex_12km_era5_gpu_20230222',
-                      label='CORDEX-12km',
+daint_01 = experiment(name='icon-clm_scaling',
+                      label='EUR-12km',
                       bestconf=36,
                       marker='>',
                       color='#253494',
