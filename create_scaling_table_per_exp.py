@@ -15,6 +15,7 @@ default_wallclock = {
     'date_run': datetime.datetime(1900, 1, 1).strftime("%Y-%m-%d %H:%M:%S")
 }
 
+
 def grep(string, filename):
     # returns lines of file_name where string appears
     # mimic the "grep" function
@@ -41,7 +42,7 @@ def grep(string, filename):
     file.close()
     return {"success": lo_success, "iline": list_iline, "line": list_line}
 
-    
+
 def extract_line(filename, line_number):
     # Open the file in read mode
     with open(filename, 'r') as file:
@@ -92,6 +93,7 @@ def get_wallclock_icon(filename, no_x, num_ok=1, success_message=None):
 
     return wallclock, date_run
 
+
 def check_icon_finished(filename,
                         string_sys_report='Script run successfully:  OK'):
     # return True if icon finished properly
@@ -104,6 +106,7 @@ def check_icon_finished(filename,
         lo_finished_ok = True
 
     return (lo_finished_ok)
+
 
 def set_default_error_slurm_file(txt_message="Problem in the slurm file"):
     # error in the slurm file, set default values
@@ -186,8 +189,8 @@ if __name__ == "__main__":
     if l_cpus_def:
         if args.mod.upper().startswith("ICON-CLM"):
             slurm_files_ar = [
-                glob.glob("{}/{}_nnodes{}/slurm-*.out".format(path_exps_dir,
-                                                       args.basis_name, n))
+                glob.glob("{}/{}_nnodes{}/slurm-*.out".format(
+                    path_exps_dir, args.basis_name, n))
                 for n in nodes_to_proceed
             ]
             slurm_files = list(itertools.chain.from_iterable(slurm_files_ar))
@@ -202,8 +205,9 @@ if __name__ == "__main__":
     # 3rd possibility : use all the slurm files containing the basis name
     if (not l_cpus_def):
         if args.mod.upper().startswith("ICON-CLM"):
-            slurm_files = sorted(glob.glob("{}/{}_nnodes*/slurm-*.out".format(
-                path_exps_dir, args.basis_name, args.basis_name)))
+            slurm_files = sorted(
+                glob.glob("{}/{}_nnodes*/slurm-*.out".format(
+                    path_exps_dir, args.basis_name, args.basis_name)))
         elif args.mod.upper().startswith("ICON"):
             slurm_files = glob.glob("{}/LOG.exp.{}*.run.*".format(
                 path_exps_dir, args.basis_name, args.basis_name))
@@ -226,8 +230,6 @@ if __name__ == "__main__":
 
     # performs the analysis (create a csv file)
     #ilin = 0
-
-
 
     # security. If not file found, exit
     if len(slurm_files) == 0:
