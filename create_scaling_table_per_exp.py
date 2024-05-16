@@ -269,9 +269,8 @@ if __name__ == "__main__":
             if check_icon_finished(filename) or args.ignore_errors:
                 # get # nodes and wallclock
                 # infer nnodes from MPI-procs in ICON output
-                nodes_line = grep(
-                    "mo_mpi::start_mpi ICON: Globally run on",
-                    filename)["line"][0]
+                nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
+                                  filename)["line"][0]
                 nnodes = int(nodes_line.split(' ')[6])
 
                 nnodes = nnodes // args.cpu_per_node
@@ -291,9 +290,8 @@ if __name__ == "__main__":
                                    success_message) or args.ignore_errors:
                 # get # nodes and wallclock
                 # infer nnodes from MPI-procs in ICON output
-                nodes_line = grep(
-                    "mo_mpi::start_mpi ICON: Globally run on",
-                    filename)["line"][0]
+                nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
+                                  filename)["line"][0]
                 nnodes = int(nodes_line.split(' ')[6])
 
                 nnodes = nnodes // args.cpu_per_node
@@ -319,15 +317,14 @@ if __name__ == "__main__":
             # get # nodes and wallclock
             # infer nnodes from MPI-procs in ICON output
             nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
-                                filename)["line"][0]
+                              filename)["line"][0]
             nnodes = int(nodes_line.split(' ')[6])
 
             nnodes = nnodes // args.cpu_per_node
 
             wallclock = get_wallclock_icon(filename, args.no_x,
-                                            num_ok=0)["wc"].total_seconds()
-            date_run = get_wallclock_icon(filename, args.no_x,
-                                            num_ok=0)["st"]
+                                           num_ok=0)["wc"].total_seconds()
+            date_run = get_wallclock_icon(filename, args.no_x, num_ok=0)["st"]
 
             # get job number
             jobnumber = float(filename.split('.')[-2])
@@ -385,4 +382,3 @@ if __name__ == "__main__":
                        sep=';',
                        index=False,
                        float_format="%.2f")
-
