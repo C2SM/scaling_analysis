@@ -1,17 +1,4 @@
 #!/usr/bin/python
-#
-# Script to parse all the slurm or echam6.log files for one experiment (runned on different number of nodes)
-# to extract the wallclock time. It creates a table containing wallclock time and associated scaling data
-# (Efficiency, Speed-up, NH,...).
-#
-#
-#Example : create_scaling_table_per_exp.py -e my_exp -m icon -y 1
-#
-# C. Siegenthaler (C2SM) , July 2015
-# C. Siegenthaler (C2SM) : adaptation for ICON, November 2017
-# C. Siegenthaler (C2SM) : modifications, December 2019
-#
-############################################################################################
 
 import numpy as np
 import os
