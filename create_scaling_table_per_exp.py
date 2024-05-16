@@ -52,9 +52,6 @@ if __name__ == "__main__":
                         type = int,\
                         help = 'factor to multiply for getting NH per year')
 
-    parser.add_argument('--no_sys_report', action='store_true',\
-                        help = 'no time report provided by the system, per default, the wallclock will be taken from this report. If this option enabled, the wallclock will computed in a different way')
-
     parser.add_argument('--no_x', action='store_false',\
                         help = 'some model logs have a "set -x" in the first line, therefore the "Script run successfully:  OK" string is contained twice in the logfile. Passing this argument assumes NO "set -x" set.')
 
@@ -257,67 +254,6 @@ if __name__ == "__main__":
 
         return date_run
 
-    def get_wallclock_Nnodes_gen_daint(filename,
-                                       string_sys_report="Elapsed",
-                                       use_timer_report=False):
-        # Find report
-        summary_in_file = grep(string_sys_report, filename)
-        if summary_in_file['success']:
-            summary_line = summary_in_file["line"][0]
-            summary_iline = summary_in_file["iline"][0]
-
-            f = open(filename)
-            lines = f.readlines()
-
-            line_labels = [s.strip() for s in summary_line.split()]
-            ind_start = line_labels.index('Start')
-            ind_end = line_labels.index('End')
-
-            # For summary_iline + x had to be subtracted by one
-            line_time = [
-                lines[summary_iline + 2].split()[i]
-                for i in [ind_start, ind_end]
-            ]
-            time_arr = [
-                datetime.datetime.strptime(s.strip(), '%Y-%m-%dT%H:%M:%S')
-                for s in line_time
-            ]
-
-            if use_timer_report:
-                string_timer_report = '# calls'
-                timer_in_file = grep(string_timer_report, filename)
-                if timer_in_file['success']:
-                    timer_line = timer_in_file["line"][0]
-                    timer_iline = timer_in_file["iline"][0]
-                    string_timer_firstrow = 'total       '
-                    first_row = grep(string_timer_firstrow, filename)
-                    first_row_line = first_row["line"][0]
-                    first_row_iline = first_row["iline"][0]
-                    time_str = lines[first_row_iline].split()[-1]
-                    wallclock = datetime.timedelta(seconds=float(time_str))
-                else:
-                    wallclock, nnodes, time_arr = set_default_error_slurm_file(
-                        "Warning : Timer output report is not present or the word {} is not found"
-                        .format(filename, string_timer_report))
-            else:
-                # find index of "start" and "end" in the report line
-                wallclock = time_arr[-1] - time_arr[0]
-
-            # Nnodes
-            line_labels_n = [
-                s.strip() for s in lines[summary_iline + 7].split()
-            ]
-            ind_nodes = line_labels_n.index('NNodes')
-            nodes = int(lines[summary_iline + 9].split()[ind_nodes])
-
-            f.close()
-        else:
-            wallclock, nnodes, time_arr = set_default_error_slurm_file(
-                "Warning : Batch summary report is not present or the word {} is not found"
-                .format(filename, string_sys_report))
-
-        return {"n": nodes, "wc": wallclock, "st": time_arr[0]}
-
     # security. If not file found, exit
     if len(slurm_files) == 0:
         print("No slurm file founded with this basis name")
@@ -332,24 +268,17 @@ if __name__ == "__main__":
         if args.mod.upper() == "ICON":
             if check_icon_finished(filename) or args.ignore_errors:
                 # get # nodes and wallclock
-                if args.no_sys_report:
-                    # infer nnodes from MPI-procs in ICON output
-                    nodes_line = grep(
-                        "mo_mpi::start_mpi ICON: Globally run on",
-                        filename)["line"][0]
-                    nnodes = int(nodes_line.split(' ')[6])
+                # infer nnodes from MPI-procs in ICON output
+                nodes_line = grep(
+                    "mo_mpi::start_mpi ICON: Globally run on",
+                    filename)["line"][0]
+                nnodes = int(nodes_line.split(' ')[6])
 
-                    nnodes = nnodes // args.cpu_per_node
+                nnodes = nnodes // args.cpu_per_node
 
-                    wallclock = get_wallclock_icon(
-                        filename, args.no_x)["wc"].total_seconds()
-                    date_run = get_wallclock_icon(filename, args.no_x)["st"]
-                else:
-                    n_wc_st = get_wallclock_Nnodes_gen_daint(
-                        filename, use_timer_report=True)
-                    nnodes = n_wc_st["n"]
-                    wallclock = n_wc_st["wc"].total_seconds()
-                    date_run = n_wc_st["st"]
+                wallclock = get_wallclock_icon(
+                    filename, args.no_x)["wc"].total_seconds()
+                date_run = get_wallclock_icon(filename, args.no_x)["st"]
             else:
                 wallclock, nnodes, date_run = set_default_error_slurm_file(
                     "Warning : Run did not finish properly")
@@ -361,31 +290,24 @@ if __name__ == "__main__":
             if check_icon_finished(filename,
                                    success_message) or args.ignore_errors:
                 # get # nodes and wallclock
-                if args.no_sys_report:
-                    # infer nnodes from MPI-procs in ICON output
-                    nodes_line = grep(
-                        "mo_mpi::start_mpi ICON: Globally run on",
-                        filename)["line"][0]
-                    nnodes = int(nodes_line.split(' ')[6])
+                # infer nnodes from MPI-procs in ICON output
+                nodes_line = grep(
+                    "mo_mpi::start_mpi ICON: Globally run on",
+                    filename)["line"][0]
+                nnodes = int(nodes_line.split(' ')[6])
 
-                    nnodes = nnodes // args.cpu_per_node
+                nnodes = nnodes // args.cpu_per_node
 
-                    wallclock = get_wallclock_icon(
-                        filename,
-                        args.no_x,
-                        num_ok=1,
-                        success_message=success_message)["wc"].total_seconds()
-                    date_run = get_wallclock_icon(
-                        filename,
-                        args.no_x,
-                        num_ok=1,
-                        success_message=success_message)["st"]
-                else:
-                    n_wc_st = get_wallclock_Nnodes_gen_daint(
-                        filename, use_timer_report=True)
-                    nnodes = n_wc_st["n"]
-                    wallclock = n_wc_st["wc"].total_seconds()
-                    date_run = n_wc_st["st"]
+                wallclock = get_wallclock_icon(
+                    filename,
+                    args.no_x,
+                    num_ok=1,
+                    success_message=success_message)["wc"].total_seconds()
+                date_run = get_wallclock_icon(
+                    filename,
+                    args.no_x,
+                    num_ok=1,
+                    success_message=success_message)["st"]
             else:
                 wallclock, nnodes, date_run = set_default_error_slurm_file(
                     "Warning : Run did not finish properly")
@@ -395,24 +317,17 @@ if __name__ == "__main__":
             print(jobnumber)
         if args.mod.upper() == "ICON-HAM":
             # get # nodes and wallclock
-            if args.no_sys_report:
-                # infer nnodes from MPI-procs in ICON output
-                nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
-                                  filename)["line"][0]
-                nnodes = int(nodes_line.split(' ')[6])
+            # infer nnodes from MPI-procs in ICON output
+            nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
+                                filename)["line"][0]
+            nnodes = int(nodes_line.split(' ')[6])
 
-                nnodes = nnodes // args.cpu_per_node
+            nnodes = nnodes // args.cpu_per_node
 
-                wallclock = get_wallclock_icon(filename, args.no_x,
-                                               num_ok=0)["wc"].total_seconds()
-                date_run = get_wallclock_icon(filename, args.no_x,
-                                              num_ok=0)["st"]
-            else:
-                n_wc_st = get_wallclock_Nnodes_gen_daint(filename,
-                                                         use_timer_report=True)
-                nnodes = n_wc_st["n"]
-                wallclock = n_wc_st["wc"].total_seconds()
-                date_run = n_wc_st["st"]
+            wallclock = get_wallclock_icon(filename, args.no_x,
+                                            num_ok=0)["wc"].total_seconds()
+            date_run = get_wallclock_icon(filename, args.no_x,
+                                            num_ok=0)["st"]
 
             # get job number
             jobnumber = float(filename.split('.')[-2])
@@ -471,4 +386,3 @@ if __name__ == "__main__":
                        index=False,
                        float_format="%.2f")
 
-################################################################################
