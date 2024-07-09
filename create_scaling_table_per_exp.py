@@ -330,7 +330,8 @@ if __name__ == "__main__":
                                       ascending=[1, 0, 1])
 
     # Convert "Wallclock" to numeric type explicitly to avoid FutureWarning
-    perf_sorted['Wallclock'] = pd.to_numeric(perf_sorted["Wallclock"], errors='coerce')
+    perf_sorted['Wallclock'] = pd.to_numeric(perf_sorted["Wallclock"],
+                                             errors='coerce')
 
     # wallclock in human reading form
     perf_sorted['Wallclock_hum'] = pd.to_datetime(
