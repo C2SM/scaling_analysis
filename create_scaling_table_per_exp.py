@@ -101,7 +101,7 @@ def read_timer_report(filename):
     # Find the index of the header row
     index = -1
     for i, line in enumerate(lines):
-        if line.strip().startswith("Timer report, ranks 0,1"):
+        if line.strip().startswith("Timer report, ranks"):
             index = i + 6
             break
     
@@ -328,10 +328,13 @@ if __name__ == "__main__":
     perf_sorted = perf_df.sort_values(by=['N_Nodes', 'Wallclock', 'Jobnumber'],
                                       ascending=[1, 0, 1])
 
+    # Convert "Wallclock" to numeric type explicitly to avoid FutureWarning
+    perf_sorted['Wallclock'] = pd.to_numeric(perf_sorted["Wallclock"], errors='coerce')
+
     # wallclock in human reading form
     perf_sorted['Wallclock_hum'] = pd.to_datetime(
         perf_sorted["Wallclock"],
-        unit='s').dt.strftime("%H:%M:%S")  #,format="%H-%M-%S")
+        unit='s').dt.strftime("%H:%M:%S")  # Corrected format
 
     # reference line time
     ref_time = perf_sorted.iloc[iref]
