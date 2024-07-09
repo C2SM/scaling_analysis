@@ -93,29 +93,30 @@ def get_wallclock_icon(filename, no_x, num_ok=1, success_message=None):
 
     return wallclock, date_run
 
-    
+
 def read_timer_report(filename):
     with open(filename, 'r') as file:
         lines = file.readlines()
-    
+
     # Find the index of the header row
     index = -1
     for i, line in enumerate(lines):
         if line.strip().startswith("Timer report, ranks 0,1"):
             index = i + 6
             break
-    
+
     if index == -1:
         raise ValueError("Timer report not found")
-    
+
     # Extract the header row and identify the index of "total avg (s)"
     row = lines[index].split()
     total_avg_value = row[-2]
 
     # Get the modification time of the file and format it
     mod_time = os.path.getmtime(filename)
-    date_run = datetime.datetime.fromtimestamp(mod_time).strftime("%Y-%m-%d %H:%M:%S")
-    
+    date_run = datetime.datetime.fromtimestamp(mod_time).strftime(
+        "%Y-%m-%d %H:%M:%S")
+
     return total_avg_value, date_run
 
 
