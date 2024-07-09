@@ -6,7 +6,7 @@ import argparse
 import glob
 import datetime
 import itertools
-import pandas as pd  # need to load module load PyExtensions on Piz Daint
+import pandas as pd
 
 # defines defaults values for nnodes, wallclock and date
 default_wallclock = {
@@ -92,6 +92,31 @@ def get_wallclock_icon(filename, no_x, num_ok=1, success_message=None):
         wallclock = datetime.timedelta(0)
 
     return wallclock, date_run
+
+    
+def read_timer_report(filename):
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+    
+    # Find the index of the header row
+    index = -1
+    for i, line in enumerate(lines):
+        if line.strip().startswith("Timer report, ranks 0,1"):
+            index = i + 6
+            break
+    
+    if index == -1:
+        raise ValueError("Timer report not found")
+    
+    # Extract the header row and identify the index of "total avg (s)"
+    row = lines[index].split()
+    total_avg_value = row[-2]
+
+    # Get the modification time of the file and format it
+    mod_time = os.path.getmtime(filename)
+    date_run = datetime.datetime.fromtimestamp(mod_time).strftime("%Y-%m-%d %H:%M:%S")
+    
+    return total_avg_value, date_run
 
 
 def check_icon_finished(filename,
@@ -271,11 +296,7 @@ if __name__ == "__main__":
                 nnodes = int(nodes_line.split(' ')[6])
                 nnodes = nnodes // args.mpi_procs_per_node
 
-                wallclock, date_run = get_wallclock_icon(
-                    filename,
-                    args.no_x,
-                    num_ok=1,
-                    success_message=success_message)
+                wallclock, date_run = read_timer_report(filename)
                 print(f"Simulation on {nnodes} nodes launched at: {date_run}")
             else:
                 wallclock, nnodes, date_run = set_default_error_slurm_file(
