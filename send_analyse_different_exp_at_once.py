@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Script to use the script "create_scaling_table_per_exp.py" on different experiments in different folders
 #

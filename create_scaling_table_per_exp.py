@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import numpy as np
 import os
@@ -122,51 +122,43 @@ def set_default_error_slurm_file(txt_message="Problem in the slurm file"):
 
 if __name__ == "__main__":
     # parsing arguments
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--exp', '-e', dest = 'basis_name',\
-                            help='basis name of the exp to anaylse.')
+                            help='Basis name of the exp to anaylse.')
     parser.add_argument('--arange_nodes', dest = 'arange_nodes',\
                             nargs = 3,\
                             type = int,\
-                            help = 'nodes number to analyse.')
+                            help = 'Nodes number arange() to analyse.')
     parser.add_argument('--nnodes', '-n', dest = 'nodes_to_proceed',\
                             default = [],\
                             type = int,\
                             nargs = '*',\
-                            help = 'cups number of the simulation to analyse.This have priority over -ncpus_incr, -niter and -nbeg_iter')
+                            help = 'Nodes number list to analyse.')
     parser.add_argument('--outfilename','-o', dest = 'outfilename',\
                             default='',\
                             help='name of the ouput file')
-
     parser.add_argument('--res', '-r', dest = 'res',\
                             default='',\
                             help='resolution(with ocean) eg T63L31GR15 ')
-
     parser.add_argument('--mod','-m', dest = 'mod',\
                             default='icon',\
                             help='model type (icon, icon-ham, icon-clm)')
-
+    parser.add_argument('--path','-p', dest = 'path_exps_dir',\
+                            default=os.getcwd(),\
+                            help='path where all experiment directories are located')
     parser.add_argument('--mpi_procs_per_node', dest = 'mpi_procs_per_node',\
-                        default = 1,\
-                        type = int,\
-                        help = 'numper of MPI procs per node')
-
+                            default = 4,\
+                            type = int,\
+                            help = 'numper of MPI procs per node')
     parser.add_argument('--fact_nh_yr', '-y', dest = 'factor_nh_year',\
-                        default = 12,\
-                        type = int,\
-                        help = 'factor to multiply for getting NH per year')
-
+                            default = 12,\
+                            type = int,\
+                            help = 'factor to multiply for getting NH per year')
     parser.add_argument('--no_x', action='store_false',\
-                        help = 'some model logs have a "set -x" in the first line, therefore the "Script run successfully:  OK" string is contained twice in the logfile. Passing this argument assumes NO "set -x" set.')
-
+                            help = 'some model logs have a "set -x" in the first line, therefore the "Script run successfully:  OK" string is contained twice in the logfile. Passing this argument assumes NO "set -x" set.')
     parser.add_argument('--ignore_errors', action='store_true',\
-                        help = 'ignores errors in the logfile. This is useful whenever the run finishes normally, but hangs at cleanup.')
-
+                            help = 'ignores errors in the logfile. This is useful whenever the run finishes normally, but hangs at cleanup.')
     args = parser.parse_args()
-
-    # assume you are in teh directory where all experiment directories are
-    path_exps_dir = os.getcwd()
-    path_out = path_exps_dir
 
     # define files to analyse
     #----------------------------------------------------------------------
@@ -189,7 +181,7 @@ if __name__ == "__main__":
     if l_cpus_def:
         if args.mod.upper().startswith("ICON-CLM"):
             slurm_files_ar = [
-                glob.glob("{}/{}_nnodes{}/slurm-*.out".format(
+                glob.glob("{}/{}_nnodes{}/joblogs/icon/icon*.o*".format(
                     path_exps_dir, args.basis_name, n))
                 for n in nodes_to_proceed
             ]
@@ -206,7 +198,7 @@ if __name__ == "__main__":
     if (not l_cpus_def):
         if args.mod.upper().startswith("ICON-CLM"):
             slurm_files = sorted(
-                glob.glob("{}/{}_nnodes*/slurm-*.out".format(
+                glob.glob("{}/{}_nnodes{}/joblogs/icon/icon*.o*".format(
                     path_exps_dir, args.basis_name, args.basis_name)))
         elif args.mod.upper().startswith("ICON"):
             slurm_files = glob.glob("{}/LOG.exp.{}*.run.*".format(
@@ -329,7 +321,7 @@ if __name__ == "__main__":
     perf_sorted['NH_year'] = perf_sorted.Node_hours * args.factor_nh_year
 
     # write csv file
-    filename_out = '%s/%s' % (path_out, args.outfilename)
+    filename_out = '%s/%s' % (path_exps_dir, args.outfilename)
     perf_sorted.to_csv(filename_out,
                        columns=[
                            'Date', 'Jobnumber', 'N_Nodes', 'Wallclock',

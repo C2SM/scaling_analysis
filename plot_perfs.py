@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 #figure with one line per exp.
 # Merge all .csv files (one per exp) into one big file containing all exps
