@@ -122,7 +122,8 @@ def set_default_error_slurm_file(txt_message="Problem in the slurm file"):
 
 if __name__ == "__main__":
     # parsing arguments
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--exp', '-e', dest = 'basis_name',\
                             help='Basis name of the exp to anaylse.')
     parser.add_argument('--arange_nodes', dest = 'arange_nodes',\
