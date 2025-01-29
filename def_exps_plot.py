@@ -32,7 +32,7 @@ euler_01 = experiment(name='atm_rte_rrtmgp_amip_test_gccO2',
                       color='#253494',
                       linestyle='-')
 
-daint_01 = experiment(name='icon-clm',
+santis_01 = experiment(name='eur11',
                       label='EUR-12km',
                       bestconf=4,
                       marker='>',

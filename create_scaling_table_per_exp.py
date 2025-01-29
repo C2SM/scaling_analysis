@@ -7,6 +7,7 @@ import glob
 import datetime
 import itertools
 import pandas as pd  # need to load module load PyExtensions on Piz Daint
+import re
 
 # defines defaults values for nnodes, wallclock and date
 default_wallclock = {
@@ -60,17 +61,24 @@ def extract_line(filename, line_number):
 
 
 def extract_job_id(filename, prefix="slurm-", suffix=".out"):
-    # Find the starting index of "slurm-" and ".out"
-    start_index = filename.find(prefix) + len(prefix)
-    end_index = filename.find(suffix)
-
-    # Extract the job ID substring
-    if start_index != -1 and end_index != -1:
-        job_id = filename[start_index:end_index]
-        return job_id
-    else:
+    if prefix == ".o":
+        match = re.search(r'\.o(\d+)', filename)
+        if match:
+            return match.group(1)
         print("Error: Filename format is incorrect.")
         return None
+    else:
+        # Find the starting index of "slurm-" and ".out"
+        start_index = filename.find(prefix) + len(prefix)
+        end_index = filename.find(suffix)
+
+        # Extract the job ID substring
+        if start_index != -1 and end_index != -1:
+            job_id = filename[start_index:end_index]
+            return job_id
+        else:
+            print("Error: Filename format is incorrect.")
+            return None
 
 
 def get_wallclock_icon(filename, no_x, num_ok=1, success_message=None):
@@ -84,8 +92,11 @@ def get_wallclock_icon(filename, no_x, num_ok=1, success_message=None):
     if len(OK_streams) >= required_ok_streams:
         total_grep = grep("total   ", filename)["line"]
         wallclock = float(total_grep[0].split()[-2])
-        line_times = grep(" Elapsed", filename)["iline"][0] + 2
-        date_run = extract_line(filename, line_times).split()[2]
+        line_times = grep(" date:", filename)["iline"][0]
+        date_run = extract_line(filename, line_times).split()[1]
+        date_run += " " + extract_line(filename, line_times + 1).split()[1]
+        # Transform date_run to ISO 8601 format
+        date_run = datetime.datetime.strptime(date_run, "%Y%m%d %H%M%S").isoformat()
     else:
         print("file {} did not finish properly".format(filename))
         print("Set Wallclock = 0")
@@ -143,7 +154,7 @@ if __name__ == "__main__":
                             help='resolution(with ocean) eg T63L31GR15 ')
     parser.add_argument('--mod','-m', dest = 'mod',\
                             default='icon',\
-                            help='model type (icon, icon-ham, icon-clm)')
+                            help='model type (icon, icon-clm)')
     parser.add_argument('--path','-p', dest = 'path_exps_dir',\
                             default=os.getcwd(),\
                             help='path where all experiment directories are located')
@@ -190,7 +201,7 @@ if __name__ == "__main__":
         elif args.mod.upper().startswith("ICON"):
             slurm_files_ar = [
                 glob.glob("{}/LOG.exp.{}_nnodes{}.run.*".format(
-                    path_exps_dir, args.basis_name, n))
+                    args.path_exps_dir, args.basis_name, n))
                 for n in nodes_to_proceed
             ]
             slurm_files = list(itertools.chain.from_iterable(slurm_files_ar))
@@ -199,11 +210,11 @@ if __name__ == "__main__":
     if (not l_cpus_def):
         if args.mod.upper().startswith("ICON-CLM"):
             slurm_files = sorted(
-                glob.glob("{}/{}_nnodes{}/joblogs/icon/icon*_02.o*".format(
-                    path_exps_dir, args.basis_name, args.basis_name)))
+                glob.glob("{}/{}_nnodes*/joblogs/icon/icon*_02.o*".format(
+                    args.path_exps_dir, args.basis_name)))
         elif args.mod.upper().startswith("ICON"):
             slurm_files = glob.glob("{}/LOG.exp.{}*.run.*".format(
-                path_exps_dir, args.basis_name, args.basis_name))
+                args.path_exps_dir, args.basis_name, args.basis_name))
 
     # fill up array
     #-----------------------------------------------------------------------------------------------
@@ -252,7 +263,7 @@ if __name__ == "__main__":
                     "Warning : Run did not finish properly")
 
             # get job number
-            jobnumber = float(filename.split('.')[-2])
+            jobnumber = extract_job_id(filename)
         elif args.mod.upper() == "ICON-CLM":
             success_message = "----- ICON finished"
             if check_icon_finished(filename,
@@ -270,26 +281,14 @@ if __name__ == "__main__":
                     num_ok=1,
                     success_message=success_message)
                 print(f"Simulation on {nnodes} nodes launched at: {date_run}")
+
+                # get job number
+                jobnumber = extract_job_id(filename, prefix=".o", suffix="")
             else:
                 wallclock, nnodes, date_run = set_default_error_slurm_file(
                     "Warning : Run did not finish properly")
 
-            # get job number
-            jobnumber = extract_job_id(filename)
-        elif args.mod.upper() == "ICON-HAM":
-            # get # nodes and wallclock
-            # infer nnodes from MPI-procs in ICON output
-            nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
-                              filename)["line"][0]
-            nnodes = int(nodes_line.split(' ')[6])
-            nnodes = nnodes // args.mpi_procs_per_node
 
-            wallclock = get_wallclock_icon(filename, args.no_x,
-                                           num_ok=0)["wc"].total_seconds()
-            date_run = get_wallclock_icon(filename, args.no_x, num_ok=0)["st"]
-
-            # get job number
-            jobnumber = float(filename.split('.')[-2])
 
         # fill array in
         np_2print.append([nnodes, wallclock, jobnumber, date_run])
@@ -322,7 +321,7 @@ if __name__ == "__main__":
     perf_sorted['NH_year'] = perf_sorted.Node_hours * args.factor_nh_year
 
     # write csv file
-    filename_out = '%s/%s' % (path_exps_dir, args.outfilename)
+    filename_out = '%s/%s' % (args.path_exps_dir, args.outfilename)
     perf_sorted.to_csv(filename_out,
                        columns=[
                            'Date', 'Jobnumber', 'N_Nodes', 'Wallclock',
