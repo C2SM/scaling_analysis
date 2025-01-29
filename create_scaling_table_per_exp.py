@@ -96,7 +96,8 @@ def get_wallclock_icon(filename, no_x, num_ok=1, success_message=None):
         date_run = extract_line(filename, line_times).split()[1]
         date_run += " " + extract_line(filename, line_times + 1).split()[1]
         # Transform date_run to ISO 8601 format
-        date_run = datetime.datetime.strptime(date_run, "%Y%m%d %H%M%S").isoformat()
+        date_run = datetime.datetime.strptime(date_run,
+                                              "%Y%m%d %H%M%S").isoformat()
     else:
         print("file {} did not finish properly".format(filename))
         print("Set Wallclock = 0")
@@ -287,8 +288,6 @@ if __name__ == "__main__":
             else:
                 wallclock, nnodes, date_run = set_default_error_slurm_file(
                     "Warning : Run did not finish properly")
-
-
 
         # fill array in
         np_2print.append([nnodes, wallclock, jobnumber, date_run])

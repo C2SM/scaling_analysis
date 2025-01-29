@@ -33,8 +33,8 @@ euler_01 = experiment(name='atm_rte_rrtmgp_amip_test_gccO2',
                       linestyle='-')
 
 santis_01 = experiment(name='eur11',
-                      label='EUR-12km',
-                      bestconf=4,
-                      marker='>',
-                      color='#253494',
-                      linestyle='-')
+                       label='EUR-12km',
+                       bestconf=4,
+                       marker='>',
+                       color='#253494',
+                       linestyle='-')
