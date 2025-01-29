@@ -182,7 +182,7 @@ if __name__ == "__main__":
     if l_cpus_def:
         if args.mod.upper().startswith("ICON-CLM"):
             slurm_files_ar = [
-                glob.glob("{}/{}_nnodes{}/joblogs/icon/icon*.o*".format(
+                glob.glob("{}/{}_nnodes{}/joblogs/icon/icon*_02.o*".format(
                     path_exps_dir, args.basis_name, n))
                 for n in nodes_to_proceed
             ]
@@ -199,7 +199,7 @@ if __name__ == "__main__":
     if (not l_cpus_def):
         if args.mod.upper().startswith("ICON-CLM"):
             slurm_files = sorted(
-                glob.glob("{}/{}_nnodes{}/joblogs/icon/icon*.o*".format(
+                glob.glob("{}/{}_nnodes{}/joblogs/icon/icon*_02.o*".format(
                     path_exps_dir, args.basis_name, args.basis_name)))
         elif args.mod.upper().startswith("ICON"):
             slurm_files = glob.glob("{}/LOG.exp.{}*.run.*".format(
