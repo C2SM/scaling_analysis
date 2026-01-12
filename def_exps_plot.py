@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # definition of the object "experiment". It contains mostly the potting properties
 
 import numpy as np
@@ -31,9 +32,9 @@ euler_01 = experiment(name='atm_rte_rrtmgp_amip_test_gccO2',
                       color='#253494',
                       linestyle='-')
 
-daint_01 = experiment(name='icon-clm_scaling',
-                      label='EUR-12km',
-                      bestconf=36,
-                      marker='>',
-                      color='#253494',
-                      linestyle='-')
+santis_01 = experiment(name='eur11',
+                       label='EUR-12km',
+                       bestconf=4,
+                       marker='>',
+                       color='#253494',
+                       linestyle='-')

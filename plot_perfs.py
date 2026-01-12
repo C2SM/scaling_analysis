@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 #figure with one line per exp.
 # Merge all .csv files (one per exp) into one big file containing all exps
@@ -58,8 +58,8 @@ if __name__ == "__main__":
     if 'eu' in host:
         experiments = [x for x in var if x.startswith('euler')]
         xlabel = '# Cores'
-    elif 'daint' in host:
-        experiments = [x for x in var if x.startswith('daint')]
+    elif 'santis' in host:
+        experiments = [x for x in var if x.startswith('santis')]
         xlabel = '# Nodes'
     else:
         raise Exception('Unknown host')

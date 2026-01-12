@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import numpy as np
 import os
@@ -7,6 +7,7 @@ import glob
 import datetime
 import itertools
 import pandas as pd  # need to load module load PyExtensions on Piz Daint
+import re
 
 # defines defaults values for nnodes, wallclock and date
 default_wallclock = {
@@ -60,17 +61,24 @@ def extract_line(filename, line_number):
 
 
 def extract_job_id(filename, prefix="slurm-", suffix=".out"):
-    # Find the starting index of "slurm-" and ".out"
-    start_index = filename.find(prefix) + len(prefix)
-    end_index = filename.find(suffix)
-
-    # Extract the job ID substring
-    if start_index != -1 and end_index != -1:
-        job_id = filename[start_index:end_index]
-        return job_id
-    else:
+    if prefix == ".o":
+        match = re.search(r'\.o(\d+)', filename)
+        if match:
+            return match.group(1)
         print("Error: Filename format is incorrect.")
         return None
+    else:
+        # Find the starting index of "slurm-" and ".out"
+        start_index = filename.find(prefix) + len(prefix)
+        end_index = filename.find(suffix)
+
+        # Extract the job ID substring
+        if start_index != -1 and end_index != -1:
+            job_id = filename[start_index:end_index]
+            return job_id
+        else:
+            print("Error: Filename format is incorrect.")
+            return None
 
 
 def get_wallclock_icon(filename, no_x, num_ok=1, success_message=None):
@@ -84,8 +92,12 @@ def get_wallclock_icon(filename, no_x, num_ok=1, success_message=None):
     if len(OK_streams) >= required_ok_streams:
         total_grep = grep("total   ", filename)["line"]
         wallclock = float(total_grep[0].split()[-2])
-        line_times = grep(" Elapsed", filename)["iline"][0] + 2
-        date_run = extract_line(filename, line_times).split()[2]
+        line_times = grep(" date:", filename)["iline"][0]
+        date_run = extract_line(filename, line_times).split()[1]
+        date_run += " " + extract_line(filename, line_times + 1).split()[1]
+        # Transform date_run to ISO 8601 format
+        date_run = datetime.datetime.strptime(date_run,
+                                              "%Y%m%d %H%M%S").isoformat()
     else:
         print("file {} did not finish properly".format(filename))
         print("Set Wallclock = 0")
@@ -122,51 +134,44 @@ def set_default_error_slurm_file(txt_message="Problem in the slurm file"):
 
 if __name__ == "__main__":
     # parsing arguments
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--exp', '-e', dest = 'basis_name',\
-                            help='basis name of the exp to anaylse.')
+                            help='Basis name of the exp to anaylse.')
     parser.add_argument('--arange_nodes', dest = 'arange_nodes',\
                             nargs = 3,\
                             type = int,\
-                            help = 'nodes number to analyse.')
+                            help = 'Nodes number arange() to analyse.')
     parser.add_argument('--nnodes', '-n', dest = 'nodes_to_proceed',\
                             default = [],\
                             type = int,\
                             nargs = '*',\
-                            help = 'cups number of the simulation to analyse.This have priority over -ncpus_incr, -niter and -nbeg_iter')
+                            help = 'Nodes number list to analyse.')
     parser.add_argument('--outfilename','-o', dest = 'outfilename',\
                             default='',\
                             help='name of the ouput file')
-
     parser.add_argument('--res', '-r', dest = 'res',\
                             default='',\
                             help='resolution(with ocean) eg T63L31GR15 ')
-
     parser.add_argument('--mod','-m', dest = 'mod',\
                             default='icon',\
-                            help='model type (icon, icon-ham, icon-clm)')
-
+                            help='model type (icon, icon-clm)')
+    parser.add_argument('--path','-p', dest = 'path_exps_dir',\
+                            default=os.getcwd(),\
+                            help='path where all experiment directories are located')
     parser.add_argument('--mpi_procs_per_node', dest = 'mpi_procs_per_node',\
-                        default = 1,\
-                        type = int,\
-                        help = 'numper of MPI procs per node')
-
+                            default = 4,\
+                            type = int,\
+                            help = 'numper of MPI procs per node')
     parser.add_argument('--fact_nh_yr', '-y', dest = 'factor_nh_year',\
-                        default = 12,\
-                        type = int,\
-                        help = 'factor to multiply for getting NH per year')
-
+                            default = 12,\
+                            type = int,\
+                            help = 'factor to multiply for getting NH per year')
     parser.add_argument('--no_x', action='store_false',\
-                        help = 'some model logs have a "set -x" in the first line, therefore the "Script run successfully:  OK" string is contained twice in the logfile. Passing this argument assumes NO "set -x" set.')
-
+                            help = 'some model logs have a "set -x" in the first line, therefore the "Script run successfully:  OK" string is contained twice in the logfile. Passing this argument assumes NO "set -x" set.')
     parser.add_argument('--ignore_errors', action='store_true',\
-                        help = 'ignores errors in the logfile. This is useful whenever the run finishes normally, but hangs at cleanup.')
-
+                            help = 'ignores errors in the logfile. This is useful whenever the run finishes normally, but hangs at cleanup.')
     args = parser.parse_args()
-
-    # assume you are in teh directory where all experiment directories are
-    path_exps_dir = os.getcwd()
-    path_out = path_exps_dir
 
     # define files to analyse
     #----------------------------------------------------------------------
@@ -189,7 +194,7 @@ if __name__ == "__main__":
     if l_cpus_def:
         if args.mod.upper().startswith("ICON-CLM"):
             slurm_files_ar = [
-                glob.glob("{}/{}_nnodes{}/slurm-*.out".format(
+                glob.glob("{}/{}_nnodes{}/joblogs/icon/icon*_02.o*".format(
                     path_exps_dir, args.basis_name, n))
                 for n in nodes_to_proceed
             ]
@@ -197,7 +202,7 @@ if __name__ == "__main__":
         elif args.mod.upper().startswith("ICON"):
             slurm_files_ar = [
                 glob.glob("{}/LOG.exp.{}_nnodes{}.run.*".format(
-                    path_exps_dir, args.basis_name, n))
+                    args.path_exps_dir, args.basis_name, n))
                 for n in nodes_to_proceed
             ]
             slurm_files = list(itertools.chain.from_iterable(slurm_files_ar))
@@ -206,11 +211,11 @@ if __name__ == "__main__":
     if (not l_cpus_def):
         if args.mod.upper().startswith("ICON-CLM"):
             slurm_files = sorted(
-                glob.glob("{}/{}_nnodes*/slurm-*.out".format(
-                    path_exps_dir, args.basis_name, args.basis_name)))
+                glob.glob("{}/{}_nnodes*/joblogs/icon/icon*_02.o*".format(
+                    args.path_exps_dir, args.basis_name)))
         elif args.mod.upper().startswith("ICON"):
             slurm_files = glob.glob("{}/LOG.exp.{}*.run.*".format(
-                path_exps_dir, args.basis_name, args.basis_name))
+                args.path_exps_dir, args.basis_name, args.basis_name))
 
     # fill up array
     #-----------------------------------------------------------------------------------------------
@@ -259,7 +264,7 @@ if __name__ == "__main__":
                     "Warning : Run did not finish properly")
 
             # get job number
-            jobnumber = float(filename.split('.')[-2])
+            jobnumber = extract_job_id(filename)
         elif args.mod.upper() == "ICON-CLM":
             success_message = "----- ICON finished"
             if check_icon_finished(filename,
@@ -277,26 +282,12 @@ if __name__ == "__main__":
                     num_ok=1,
                     success_message=success_message)
                 print(f"Simulation on {nnodes} nodes launched at: {date_run}")
+
+                # get job number
+                jobnumber = extract_job_id(filename, prefix=".o", suffix="")
             else:
                 wallclock, nnodes, date_run = set_default_error_slurm_file(
                     "Warning : Run did not finish properly")
-
-            # get job number
-            jobnumber = extract_job_id(filename)
-        elif args.mod.upper() == "ICON-HAM":
-            # get # nodes and wallclock
-            # infer nnodes from MPI-procs in ICON output
-            nodes_line = grep("mo_mpi::start_mpi ICON: Globally run on",
-                              filename)["line"][0]
-            nnodes = int(nodes_line.split(' ')[6])
-            nnodes = nnodes // args.mpi_procs_per_node
-
-            wallclock = get_wallclock_icon(filename, args.no_x,
-                                           num_ok=0)["wc"].total_seconds()
-            date_run = get_wallclock_icon(filename, args.no_x, num_ok=0)["st"]
-
-            # get job number
-            jobnumber = float(filename.split('.')[-2])
 
         # fill array in
         np_2print.append([nnodes, wallclock, jobnumber, date_run])
@@ -329,7 +320,7 @@ if __name__ == "__main__":
     perf_sorted['NH_year'] = perf_sorted.Node_hours * args.factor_nh_year
 
     # write csv file
-    filename_out = '%s/%s' % (path_out, args.outfilename)
+    filename_out = '%s/%s' % (args.path_exps_dir, args.outfilename)
     perf_sorted.to_csv(filename_out,
                        columns=[
                            'Date', 'Jobnumber', 'N_Nodes', 'Wallclock',

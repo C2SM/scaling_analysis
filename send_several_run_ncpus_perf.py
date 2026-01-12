@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # Wrapper to send several ICON (-HAM) runs
 # for performance anaylsis with different number of cpus
